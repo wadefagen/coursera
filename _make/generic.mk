@@ -25,10 +25,10 @@ DEPFILE_FLAGS = -MMD -MP
 WARNINGS = -pedantic -Wall -Werror -Wfatal-errors -Wextra -Wno-unused-parameter -Wno-unused-variable
 
 # Flags for compile:
-CXXFLAGS = -std=c++1y -stdlib=libc++ -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
+CXXFLAGS += -std=c++1y -stdlib=libc++ -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
 
 # Flags for linking:
-LDFLAGS = -std=c++1y -stdlib=libc++
+LDFLAGS += -std=c++1y -stdlib=libc++
 
 # Rule for `all` (first/default rule):
 all: $(EXE)
@@ -56,7 +56,7 @@ $(OBJS_DIR)/%.o: %.cpp | $(OBJS_DIR)
 
 # Standard C++ Makefile rules:
 clean:
-	rm -rf $(EXE) $(TEST) $(OBJS_DIR) $(CLEAN_RM)
+	rm -rf $(EXE) $(TEST) $(OBJS_DIR) $(CLEAN_RM) *.o *.d
 
 tidy: clean
 	rm -rf doc
