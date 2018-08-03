@@ -3,3 +3,4 @@
 *.d
 .vscode
 */main
+**/main

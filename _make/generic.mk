@@ -42,6 +42,7 @@ $(EXE): $(patsubst %.o, $(OBJS_DIR)/%.o, $(OBJS))
 # Ensure .objs/ exists:
 $(OBJS_DIR):
 	@mkdir -p $(OBJS_DIR)
+	@mkdir -p $(OBJS_DIR)/uiuc
 
 # Rules for compiling source code.
 # - Every object file is required by $(EXE)
@@ -52,6 +53,7 @@ $(OBJS_DIR)/%.o: %.cpp | $(OBJS_DIR)
 # Additional dependencies for object files are included in the clang++
 # generated .d files (from $(DEPFILE_FLAGS)):
 -include $(OBJS_DIR)/*.d
+-include $(OBJS_DIR)/uiuc/*.d
 
 
 # Standard C++ Makefile rules:

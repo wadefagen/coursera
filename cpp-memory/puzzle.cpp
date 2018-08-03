@@ -7,6 +7,7 @@
 
 double someOtherFunction();  // Forward decl
 
+#include <iostream>
 #include "Cube.h"
 using uiuc::Cube;
 
@@ -20,7 +21,9 @@ int main() {
   Cube *c = CreateUnitCube();
   someOtherFunction();
   double a = c->getSurfaceArea();
+  std::cout << "Surface Area: " << a << std::endl;
   double v = c->getVolume();
+  std::cout << "Volume: " << v << std::endl;
   return 0;
 }
 
