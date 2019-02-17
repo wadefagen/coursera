@@ -10,9 +10,9 @@
 #
 
 
-# Compiler/linker comfig and object/depfile directory:
-CXX = clang++
-LD = clang++
+# Compiler/linker config and object/depfile directory:
+CXX = g++
+LD = g++
 OBJS_DIR = .objs
 
 # -MMD and -MP asks clang++ to generate a .d file listing the headers used in the source code for use in the Make process.
@@ -25,10 +25,10 @@ DEPFILE_FLAGS = -MMD -MP
 WARNINGS = -pedantic -Wall -Werror -Wfatal-errors -Wextra -Wno-unused-parameter -Wno-unused-variable
 
 # Flags for compile:
-CXXFLAGS += -std=c++1y -stdlib=libc++ -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
+CXXFLAGS += -std=c++14 -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
 
 # Flags for linking:
-LDFLAGS += -std=c++1y -stdlib=libc++
+LDFLAGS += -std=c++14
 
 # Rule for `all` (first/default rule):
 all: $(EXE)
