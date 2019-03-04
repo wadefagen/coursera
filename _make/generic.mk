@@ -22,7 +22,16 @@ OBJS_DIR = .objs
 DEPFILE_FLAGS = -MMD -MP
 
 # Provide lots of helpful warning/errors:
-WARNINGS = -pedantic -Wall -Werror -Wfatal-errors -Wextra -Wno-unused-parameter -Wno-unused-variable
+# (Switching from clang++ to g++ caused some trouble here. Not all flags are identically between the compilers.)
+#WARNINGS_AS_ERRORS = -Werror # Un-commenting this line makes compilation much more strict.
+GCC_EXCLUSIVE_WARNING_OPTIONS =  # -Wno-unused-but-set-variable
+CLANG_EXCLUSIVE_WARNING_OPTIONS =  # -Wno-unused-parameter -Wno-unused-variable
+ifeq ($(CXX),g++)
+EXCLUSIVE_WARNING_OPTIONS = $(GCC_EXCLUSIVE_WARNING_OPTIONS)
+else
+EXCLUSIVE_WARNING_OPTIONS = $(CLANG_EXCLUSIVE_WARNING_OPTIONS)
+endif
+WARNINGS = -pedantic -Wall $(WARNINGS_AS_ERRORS) -Wfatal-errors -Wextra $(EXCLUSIVE_WARNING_OPTIONS)
 
 # Flags for compile:
 CXXFLAGS += -std=c++14 -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
