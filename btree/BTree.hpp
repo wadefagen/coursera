@@ -1,5 +1,5 @@
 /**
- * An empty BinaryTree.
+ * An empty BTree.
  * 
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>

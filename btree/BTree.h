@@ -1,5 +1,5 @@
 /**
- * BinaryTree class outline.
+ * BTree class outline.
  * 
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>
