@@ -25,8 +25,8 @@ void Stack::push_back(const Cube & cube) {
   cubes_.push_back(cube);
 }
 
-Cube & Stack::removeTop() {
-  Cube & cube = peekTop();
+Cube Stack::removeTop() {
+  Cube cube = peekTop();
   cubes_.pop_back();
   return cube;
 }
