@@ -14,7 +14,7 @@ using uiuc::Cube;
 class Stack {
   public:
     void push_back(const Cube & cube);
-    Cube & removeTop();
+    Cube removeTop();
     Cube & peekTop();
     unsigned size() const;
 

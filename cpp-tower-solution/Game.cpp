@@ -36,7 +36,7 @@ Game::Game() {
 }
 
 void Game::_move(unsigned index1, unsigned index2) {
-  Cube & cube = stacks_[index1].removeTop();
+  Cube cube = stacks_[index1].removeTop();
   stacks_[index2].push_back(cube);
 }
 

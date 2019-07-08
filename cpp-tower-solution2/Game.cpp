@@ -37,7 +37,7 @@ Game::Game() {
 
 // Move a Cube from Stack `s1` to Stack `s2`:
 void Game::_moveCube(Stack & s1, Stack & s2) {
-  Cube & cube = s1.removeTop();
+  Cube cube = s1.removeTop();
   s2.push_back(cube);
 }
 
