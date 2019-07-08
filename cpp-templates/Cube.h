@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <iostream>
+
 namespace uiuc {
   class Cube {
     public:

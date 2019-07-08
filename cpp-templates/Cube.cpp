@@ -38,6 +38,7 @@ namespace uiuc {
   }
 
   std::ostream& operator<<(std::ostream & os, const Cube & cube) {
-    std::cout << "Cube(" << cube.length_ << ")";
+    os << "Cube(" << cube.length_ << ")";
+    return os;
   }
 }
