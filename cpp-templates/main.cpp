@@ -22,7 +22,7 @@ int main() {
   cout << "max(3, 5): " << max(3, 5) << endl;
   cout << "max('a', 'd'): " << max('a', 'd') << endl;
   cout << "max(\"Hello\", \"World\"): " << max("Hello", "World") << endl;
-  cout << "max( Cube(3), Cube(6) )" << max( Cube(3), Cube(6) ) << endl;
+  cout << "max( Cube(3), Cube(6) ): " << max( Cube(3), Cube(6) ) << endl;
 
   return 0;
 }
