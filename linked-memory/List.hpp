@@ -5,6 +5,9 @@
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>
  */
 
+// Redundantly make sure theat List.h is included. Since List.h is written
+// to include this file, we won't need to explicitly include List.hpp in
+// the main.cpp file.
 #include "List.h"
 
 template <typename T>
@@ -46,6 +49,7 @@ typename List<T>::ListNode *List<T>::_find(const T & data) {
   ListNode *thru = head_;
   while (thru != nullptr) {
     if (thru->data == data) { return thru; }
+    thru = thru->next;
   }
 
   return nullptr;  
