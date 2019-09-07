@@ -21,7 +21,7 @@ int main() {
 
   cout << &y << endl;
   cout << y << endl;
-  cout << *y << endl;
+  // cout << *y << endl;
 
   return 0;
 }
