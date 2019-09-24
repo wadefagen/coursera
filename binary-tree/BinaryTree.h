@@ -2,7 +2,7 @@
  * BinaryTree class outline.
  * 
  * @author
- *   Wade Fagen-Ulmschneider <waf@illinois.edu>
+ *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
  */
 
 #pragma once
@@ -23,5 +23,8 @@ class BinaryTree {
     TreeNode *root_;
 };
 
+// Sometimes, your header files might include another header file with
+// further templated definitions. The .h and .hpp are both just filename
+// extensions for header files.
 #include "BinaryTree.hpp"
 
