@@ -7,22 +7,38 @@
 
 #pragma once
 
+#include <iostream>
 #include <vector>
+#include <queue>
 
 template <typename T>
 class BinaryTree {
   public:
+
+    // We'll start with this node type declaration that's specific to this
+    // variety of BinaryTree<T>. It's okay for this to be public; it's just
+    // a type.
+    class TreeNode {
+      public:
+        // For simplicity, this version of the tree will store value copies
+        // of the actual data items placed in the tree, not references.
+        // (That is, note that we wrote "T data" here, not "T& data".)
+        T data;
+        TreeNode *left, *right;
+        // This TreeNode constructor makes a copy of the data passed in when
+        // it initializes its "data" member variable using the input called
+        // "dataArgument". It copies the value since "data" is defined simply
+        // with type "T". We only use an initialization list, so the function
+        // body is written empty as "{}" to complete the definition.
+        TreeNode(const T & dataArgument) : data(dataArgument), left(nullptr),
+          right(nullptr) { }
+    };
+
     // Default constructor: We'll declare define this explicitly here.
     // Make sure that the root pointer is initialized as null.
     // We can use an initialization list for that and the function body
     // may be empty here to complete the definition.
     BinaryTree() : root_(nullptr) { }
-
-    // This function will let us build a "complete" tree based on the vector
-    // of intended contents that is passed in. We'll declare this function
-    // here and define it in BinaryTree.hpp separately. Please see that file
-    // for important notes on this!
-    void createCompleteTree(const std::vector<T>& contents);
 
     // We'll inhibit the compiler from allowing a copy constructor or from
     // creating an implicit copy constructor for us. This is a special use
@@ -43,6 +59,20 @@ class BinaryTree {
     // whole definition.)
     ~BinaryTree() {
       destroyWholeTree();
+    }
+
+    // This function will let us build a "complete" tree based on the vector
+    // of intended contents that is passed in. We'll declare this function
+    // here and define it in BinaryTree.hpp separately. Please see that file
+    // for important notes on this!
+    void createCompleteTree(const std::vector<T>& contents);
+
+    // As a convenience, we'll let ourselves invoke the createCompleteTree
+    // function directly from a constructor with an argument like this.
+    // First it delegates the initial initialization of an empty tree to the
+    // default constructor. Then, we call the member function.
+    BinaryTree(const std::vector<T>& contents) : BinaryTree() {
+      createCompleteTree(contents);
     }
 
     // This function deletes the subtree rooted at the specified node.
@@ -81,26 +111,10 @@ class BinaryTree {
       destroySubtree(root_);
       root_ = nullptr;
     }
-
+  
   private:
-    class TreeNode {
-      public:
-        // For simplicity, this version of the tree will store value copies
-        // of the actual data items placed in the tree, not references.
-        // (That is, note that we wrote "T data" here, not "T& data".)
-        T data;
-        TreeNode *left, *right;
-        // This TreeNode constructor makes a copy of the data passed in when
-        // it initializes its "data" member variable using the input called
-        // "dataArgument". It copies the value since "data" is defined simply
-        // with type "T". We only use an initialization list, so the function
-        // body is written empty as "{}" to complete the definition.
-        TreeNode(const T & dataArgument) : data(dataArgument), left(nullptr),
-          right(nullptr) { }
-    };
 
     TreeNode *root_;
-    
 
 };
 
