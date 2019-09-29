@@ -1,5 +1,5 @@
 /**
- * BinaryTreeTraversals.hpp - auxiliary definitions for tree traversal example
+ * ValueBinaryTree.hpp - auxiliary definitions for tree traversal example
  *
  * @author
  *   Eric Huber, Wade Fagen-Ulmschneider <waf@illinois.edu>
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "BinaryTreeTraversals.h"
+#include "ValueBinaryTree.h"
 
 // Note that this .hpp file is just another header file, to be included
 // by the first header file. The idea is that templated class code needs
@@ -28,7 +28,7 @@
 // root node, 2 will be the left child of the 1, 3 will be the right child
 // of the 1, and 4 will be the left child of the 2.
 template <typename T>
-void BinaryTree<T>::createCompleteTree(const std::vector<T>& contents) {
+void ValueBinaryTree<T>::createCompleteTree(const std::vector<T>& contents) {
 
   // Begin by clearing anything that we had previously put in the tree.
   destroyWholeTree();
@@ -131,5 +131,61 @@ void BinaryTree<T>::createCompleteTree(const std::vector<T>& contents) {
 
 }
 
-// TODO: traversals
+// -------
+
+// Traversal functions:
+
+template<typename T>
+void ValueBinaryTree<T>::preOrder(TreeNode* cur) {
+  // Only do anything if the pointer is not nullptr.
+  if (cur) {
+    // We'll act upon this node first, by "shouting it out" now. This is
+    // our way of officially visiting this node at this time, as part of the
+    // intended "pre-order" traversal.
+    shout(cur);
+    // Then, recurse on the left.
+    preOrder(cur->left);
+    // Lastly, recurse on the right.
+    preOrder(cur->right);
+  }
+}
+
+template<typename T>
+void ValueBinaryTree<T>::inOrder(TreeNode* cur) {
+  // Only do anything if the pointer is not nullptr.
+  if (cur) {
+    // First, recurse on the left.
+    inOrder(cur->left);
+    // Now act upon this node, because we doing an "in-order" traversal.
+    shout(cur);
+    // Lastly, recurse on the right.
+    inOrder(cur->right);
+  }
+}
+
+
+template<typename T>
+void ValueBinaryTree<T>::postOrder(TreeNode* cur) {
+  // Only do anything if the pointer is not nullptr.
+  if (cur) {
+    // First, recurse on the left.
+    postOrder(cur->left);
+    // Next, recurse on the right.
+    postOrder(cur->right);
+    // Now act upon this node last, because we doing a "post-order" traversal.
+    shout(cur);
+  }
+}
+
+// What about a level-order traversal? You'll try doing that in one of the
+// programming projects.
+
+// Hint 1: But actually, if you study the source code for ValueBinaryTree in
+// the files here, you'll see that createCompleteTree basically performs a
+// level-order traversal already.
+
+// Hint 2: The essential mechanism that allows us to do the level-order
+// traversal in createCompleteTree is the queue that helps us order our
+// visits, not the use of the pointer-to-pointer type that we use for
+// assembling the tree.
 
