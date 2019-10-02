@@ -43,7 +43,8 @@ int main() {
   t.insert(v[20], "twenty");
   t.insert(v[2], "two");
 
-  std::cout << "t.find(51): " << t.find(51) << std::endl;
+  int v51 = 51;
+  std::cout << "t.find(51): " << t.find(v51) << std::endl;
 
   std::cout << "t.remove(11): " << t.remove(11) << std::endl;
 

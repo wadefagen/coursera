@@ -23,7 +23,7 @@ template <typename K, typename D>
 class Dictionary {
   public:
     Dictionary() : head_(nullptr) { }
-    const D& find(const K& key) const;
+    const D& find(const K& key);
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
     bool empty() const {
@@ -36,11 +36,11 @@ class Dictionary {
   private:
     class TreeNode {
       public:
-        // *See note below about how references are being used here.
+        // *See note 1 below about how references are being used here.
         const K& key;
         const D& data;
         TreeNode *left, *right;
-        // **See note below about how this initialization list is styled.
+        // **See note 2 below about how this initialization list is styled.
         TreeNode(const K& key, const D& data)
           : key(key), data(data), left(nullptr), right(nullptr) { }
     };
@@ -49,25 +49,35 @@ class Dictionary {
 
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
     const D& _remove(TreeNode*& node);
-    TreeNode*& _iop(TreeNode*& cur) const;
+    TreeNode*& _iop_of(TreeNode*& cur) const;
     TreeNode*& _rightmost(TreeNode*& cur) const;
-    void _swap_data(TreeNode* node1, TreeNode* node2);
+
+    void _swap_node_pointers(TreeNode*& node1, TreeNode*& node2);
 
 };
 
-// *Note that this implementation of a tree is storing explicit aliases
-// to memory using references. This means that the actual allocation,
-// cleanup, and general responsibility for that data memory will lie
-// outside of this class implementation. However, the tree nodes
-// themselves belong to the tree and will need to be created or
-// deleted by the tree.
+// Note 1:
+// That this implementation of a tree is storing explicit aliases to memory
+// using references. This means that the actual allocation, cleanup, and
+// general responsibility for that data memory will lie outside of this class
+// implementation. However, the tree nodes themselves belong to the tree and
+// will need to be created or deleted by the tree.
+//   There is an extra layer of complication in that plain C++ references
+// cannot be re-assigned to refer to something else; they must be initialized
+// to refer to one thing, and then they always refer to the same thing. You
+// can edit the data they refer to, but you can't change them to refer to
+// other data. However, if you are using "const references" as well, as this
+// version of a tree does, then the data itself cannot be edited either. The
+// references it stores are then direct alias to other memory in a read-only
+// mode.
 
-// **This TreeNode constructor initializes its own "data" member using
+// Note 2:
+// This TreeNode constructor initializes its own "data" member using
 // the argument also called "data". This is one of VERY FEW places in
 // C++ where you can reuse the same variable name to mean different
 // things at the same time.
 //   Within the initialization list only, when you write data(data) as
-// shown below, it correctly initializes the member variable called
+// shown, it correctly initializes the member variable called
 // "data" using the argument called "data". But if you write "data"
 // again in the function body, then you will be referring to the
 // function argument, not to the member variable. It's best to avoid

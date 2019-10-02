@@ -28,7 +28,7 @@
 // -------
 
 template <typename K, typename D>
-const D& Dictionary<K, D>::find(const K& key) const {
+const D& Dictionary<K, D>::find(const K& key) {
   TreeNode*& node = _find(key, head_);
   if (node == nullptr) { throw std::runtime_error("key not found"); }
   return node->data;
@@ -38,33 +38,36 @@ template <typename K, typename D>
 typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_find(
   const K& key, TreeNode*& cur) const {
 
-  // (Please also see the implementation of _iop below, which discusses
+  // (Please also see the implementation of _iop_of below, which discusses
   //  some more nuances about returning references to pointers.)
 
-  // Case 1:
+  // [Base case 1: When the key is not found]
   // cur will be nullptr if the tree is empty, or if we descend below the
   // lowest level without finding the key. Then we return nullptr and the
   // outer "find" function (which calls "_find") will report that as an
-  // error. (Note: The "cur" we return in this case is equal to nullptr, but
+  // error. Or, if we were calling insert, then the pointer returned is the
+  // position where the item should be placed.
+  //   Note: The "cur" we return in this case is equal to nullptr, but
   // it's important to write "return cur;" and not "return nullptr;" since
-  // this function returns by reference. Returning the reference of a
-  // temporary literal will often fail to compile. We can return cur by
-  // reference since it's a specific pointer stored in memory in our tree
-  // already, and this accomplishes what we want, since it has the value of
-  // nullptr anyway.
-  if      (cur == nullptr)  { return cur; }
-  // Case 2:
+  // this function returns by reference. We specifically want to return the
+  // pointer at this position we found. This is true whether we want to
+  // replace it, as when we're doing an insertion, or if this is a failed
+  // "find" operation that should report an error. We should not return a
+  // reference to the "nullptr" literal, and we should avoid making
+  // references to temporary constants like numerical literals in any case.
+  if (cur == nullptr) { return cur; }
+  // [Base case 2: When the key is found]
   // If we find a key that matches by value, then return the current TreeNode*
   else if (key == cur->key) { return cur; }
-  // Case 3:
+  // [When we need to search left]
   // If the key we're looking for is smaller than the current node's key,
   // then we should look to the left next.
-  else if (key < cur->key)  { return _find(key, cur->left); }
-  // Case 4:
+  else if (key < cur->key) { return _find(key, cur->left); }
+  // [When we need to search right]
   // Otherwise, implicitly, the key we're looking for is larger than the
   // current node's key. (We know this because it's not equal and not less.)
   // So we should search to the right next.
-  else                      { return _find(key, cur->right); }
+  else { return _find(key, cur->right); }
 
 }
 
@@ -74,7 +77,13 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_find(
 */
 template <typename K, typename D>
 void Dictionary<K, D>::insert(const K& key, const D& data) {
+  // Find the place where the item should go.
   TreeNode *& node = _find(key, head_);
+  // For the sake of this example, let's disallow duplicates. If the node
+  // found isn't a nullptr, then the key already exists, so report an error.
+  // (We could also do something nicer than this, like remove the old key and
+  // then insert the new item to replace it.)
+  if (node) { throw std::runtime_error("error: insert() used on an existing key"); }
   node = new TreeNode(key, data);
 }
 
@@ -90,6 +99,14 @@ const D& Dictionary<K, D>::remove(const K& key) {
 
 template <typename K, typename D>
 const D& Dictionary<K, D>::_remove(TreeNode*& node) {
+
+  // If the node we are trying to remove is a nullptr, then it's an error,
+  // as even if we'd like to "do nothing" here as a base case, we must return
+  // a const reference to some data removed, and there is none. In practice
+  // you would want to add more features to your class for handling these
+  // situations efficiently in a way that makes sense for your users.
+  if (!node) { throw std::runtime_error("error: _remove() used on non-existing key"); }
+
   // Zero child remove:
   if (node->left == nullptr && node->right == nullptr) {
     const D& data = node->data;
@@ -112,46 +129,46 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
   else if (node->left == nullptr && node->right != nullptr) {
     const D& data = node->data;
     TreeNode* temp = node;
-    node = node->left;
+    node = node->right;
     delete temp;
     return data;
   }
   // Two-child remove
   else {
     // Find the IOP (in-order predecessor) of the current node.
-    TreeNode*& iop = _iop(node);
+    TreeNode*& iop = _iop_of(node);
 
     // The lecture originally showed the call in this way, but the code has
     // been revised so that the first step to the left happens inside the
-    // _iop function:
+    // "_iop_of" function:
     // TreeNode*& iop = _iop( node->left ); // old version
 
     // Since this is the two-child remove case, we know that some in-order
-    // predecessor does exist, so the _iop lookup should not have failed.
+    // predecessor does exist, so the _iop_of lookup should not have failed.
     if (!iop) {
       throw std::runtime_error("error in two-child remove");
     }
 
     // Swap the node to remove and the IOP
-    _swap_data( node, iop );
+    _swap_node_pointers(node, iop);
 
-    // Remove the new IOP node that was swapped.
-    // (Since "node" is now at the old IOP position, it will be removed
-    //  by one of the other cases.)
-    return _remove( node );
+    // The node pointed to by "node" is now in the IOP position.
+
+    // Recurse to remove the node.
+    return _remove(node);
   }
 }
 
 // -------
 
 // The implementations for the following functions were not shown in the
-// lecture. The _iop function has been revised a little bit, to take one
-// step to the left before going to the right. This lets you obtain the
-// IOP of the "cur" node when you call _iop(cur) explicitly, instead of
-// calling _iop(cur->left) as originally shown. -Eric
+// lecture. The _iop function has been revised a little bit as _iop_of, to
+// take one step to the left before going to the right. This obtains the IOP
+// of the "cur" node when you call "_iop_of(cur)" explicitly, instead of
+// requiring a "_iop(cur->left)" as originally shown.
 
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop(
+typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
   TreeNode*& cur) const {
 
   // get the right-most child of the left subtree of cur
@@ -238,12 +255,16 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
 }
 
 template <typename K, typename D>
-void Dictionary<K, D>::_swap_data(TreeNode* node1, TreeNode* node2) {
-  if (!node1 || !node2) {
-    throw std::runtime_error("error: _swap_data used on a null node pointer");
-  }
-  else {
-    std::swap(node1->data, node2->data);
-  }
-}
+void Dictionary<K, D>::_swap_node_pointers(TreeNode*& node1, TreeNode*& node2) {
 
+  // Swap the respective children pointers of the nodes.
+  // (Note that std::swap passes its arguments by reference and swaps the
+  // values of the original items. Our node pointers are pointers, so it
+  // directly swaps the addresses they hold.)
+  std::swap(node1->left, node2->left);
+  std::swap(node1->right, node2->right);
+
+  // Now swap the pointers to the nodes themselves.
+  std::swap(node1, node2);
+
+}
