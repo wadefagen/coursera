@@ -11,6 +11,10 @@
 // things besides a BST. For example, later in the course sequence you will
 // deal with other implementations of a dictionary ADT based on hash tables.
 
+// This example is based on original work by Prof. Wade Fagen-Ulmschneider
+// as shown in lecture. The course staff have edited it slightly and added
+// code comments, so the line numbering will not match up exactly.
+
 #pragma once
 
 #include <stdexcept>
@@ -18,10 +22,16 @@
 template <typename K, typename D>
 class Dictionary {
   public:
-    Dictionary();
-    const D& find(const K& key);
+    Dictionary() : head_(nullptr) { }
+    const D& find(const K& key) const;
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
+    bool empty() const {
+      // If the head_ pointer is null, returns true. Else, returns false.
+      // (This happens implicitly because the value of head_ is cast to
+      // bool and logically negated.)
+      return !head_;
+    }
 
   private:
     class TreeNode {
@@ -38,6 +48,10 @@ class Dictionary {
     TreeNode *head_;
 
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
+    const D& _remove(TreeNode*& node);
+    TreeNode*& _iop(TreeNode*& cur) const;
+    TreeNode*& _rightmost(TreeNode*& cur) const;
+    void _swap_data(TreeNode* node1, TreeNode* node2);
 
 };
 
