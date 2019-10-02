@@ -37,7 +37,7 @@ class BinaryTree {
 // C++ where you can reuse the same variable name to mean different
 // things at the same time.
 //   Within the initialization list only, when you write data(data) as
-// shown below, it correctly initializes the member variable called
+// shown, it correctly initializes the member variable called
 // "data" using the argument called "data". But if you write "data"
 // again in the function body, then you will be referring to the
 // function argument, not to the member variable. It's best to avoid
