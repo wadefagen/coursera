@@ -68,7 +68,7 @@ const D& Dictionary<K, D>::find(const K& key) {
   //   through return-by-reference.
   // If not found, then the node returned has a value of nullptr.
   TreeNode*& node = _find(key, head_);
-  if (node == nullptr) { throw std::runtime_error("key not found"); }
+  if (node == nullptr) { throw std::runtime_error("error: key not found"); }
   // We found the node, so return the actual data there, by reference.
   return node->data;
 }
@@ -332,7 +332,7 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
 
   // General case: The cur pointer is not null, and it does have a right
   // child, so we should recurse to the right and return whatever we get.
-  return _rightmost(cur);
+  return _rightmost(cur->right);
 }
 
 // _swap_nodes:

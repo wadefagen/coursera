@@ -46,6 +46,9 @@ int main() {
 
     std::cout << "Inserting items..." << std::endl;
 
+    // Note that we insert items here by reference to the actual items in the
+    // vector "v" where they reside. The [] indexing operator for std::vector
+    // returns a reference.
     t.insert(v[37], "thirty seven");
     t.insert(v[19], "nineteen");
     t.insert(v[51], "fifty one");
@@ -55,23 +58,41 @@ int main() {
     t.insert(v[20], "twenty");
     t.insert(v[2], "two");
 
+    // When we call find and remove below, we don't need to use v[] and we
+    // can specify a number just by a literal value. That's because our
+    // member functions are designed to find a key that matches the argument
+    // by value equivalence, not by memory identity.
+
     std::cout << "Dictionary empty after insertions? " << t.empty() << std::endl;
 
+    std::cout << "Showing that 51 has been inserted:" << std::endl;
     std::cout << "t.find(51): " << t.find(51) << std::endl;
 
+    std::cout << "Trying to remove some items:" << std::endl;
     std::cout << "t.remove(11): " << t.remove(11) << " (zero child remove)" << std::endl;
     std::cout << "t.remove(51): " << t.remove(51) << " (one child remove)" << std::endl;
     std::cout << "t.remove(19): " << t.remove(19) << " (two child remove)" << std::endl;
 
+    // The following "find" query throws an exception when the item is not
+    // found, as shown in lecture. Here's a little example of exception
+    // handling using the "try...catch" syntax. (If we didn't use this to
+    // catch the exception, then the program would just crash to the terminal
+    // and display the exception error message there.)
     try {
-      // The following line throws an exception when the item is not found.
-      // If we didn't use the "try...catch" mechanism, this would just cause
-      // the program to crash and display the exception error message anyway.
+      std::cout << "Attempting to find a missing item: " << std::endl;
       std::cout << "t.find(51): " << t.find(51) << std::endl;
     }
     catch (std::exception& e) {
-      std::cout << "\nCaught exception with error message:" << std::endl;
-      std::cout << e.what() << std::endl;
+      std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
+    }
+
+    // Another example
+    try {
+      std::cout << "Attempting to remove a missing item: " << std::endl;
+      std::cout << "t.remove(99): " << t.remove(99) << std::endl;
+    }
+    catch (std::exception& e) {
+      std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
     }
   }
 

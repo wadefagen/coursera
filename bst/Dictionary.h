@@ -17,21 +17,45 @@
 
 #pragma once
 
+// We include <stdexcept> so we can throw std::runtime_error in some cases.
 #include <stdexcept>
+// We include <utility> for the std::swap function
+#include <utility>
 
 template <typename K, typename D>
 class Dictionary {
   public:
+    // Let the constructor just initialize the head pointer to null.
+    // We'll skip implementing other constructors for this example.
     Dictionary() : head_(nullptr) { }
+
+    // find, insert, remove: Please see Dictionary.hpp for comments on these.
     const D& find(const K& key);
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
+
+    // Some other public functions (not shown in lecture):
     
+    // empty: Tells whether the tree is empty or not.
     bool empty() const {
       // If the head_ pointer is null, returns true. Else, returns false.
       // (This happens implicitly because the value of head_ is cast to
       // bool and logically negated.)
       return !head_;
+    }
+
+    // clear_tree: Remove the head item until the tree is empty.
+    void clear_tree() {
+      while (head_) {
+        // As long as the head pointer isn't null, we can just look at
+        // what the key is and call remove based on that.
+        remove(head_->key);
+      }
+    }
+
+    // Destructor: We just clear the tree.
+    ~Dictionary() {
+      clear_tree();
     }
 
   private:
@@ -48,11 +72,13 @@ class Dictionary {
 
     TreeNode *head_;
 
+    // These internal helper functions are private because they are only
+    // meant to be used by other member functions of our class. Please see
+    // the comments in Dictionary.hpp for details about them.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
     const D& _remove(TreeNode*& node);
     TreeNode*& _iop_of(TreeNode*& cur) const;
     TreeNode*& _rightmost(TreeNode*& cur) const;
-
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
 
 };
