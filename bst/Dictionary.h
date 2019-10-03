@@ -52,7 +52,8 @@ class Dictionary {
     TreeNode*& _iop_of(TreeNode*& cur) const;
     TreeNode*& _rightmost(TreeNode*& cur) const;
 
-    void _swap_node_pointers(TreeNode*& node1, TreeNode*& node2);
+    TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
+    void _swap_node_pointers_complex(TreeNode*& node1, TreeNode*& node2);
 
 };
 

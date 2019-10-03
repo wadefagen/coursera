@@ -43,12 +43,13 @@ int main() {
   t.insert(v[20], "twenty");
   t.insert(v[2], "two");
 
-  int v51 = 51;
-  std::cout << "t.find(51): " << t.find(v51) << std::endl;
+  std::cout << "t.find(51): " << t.find(51) << std::endl;
 
-  std::cout << "t.remove(11): " << t.remove(11) << std::endl;
+  std::cout << "t.remove(11): " << t.remove(11) << " (zero child remove)" << std::endl;
+  std::cout << "t.remove(51): " << t.remove(51) << " (one child remove)" << std::endl;
+  std::cout << "t.remove(19): " << t.remove(19) << " (two child remove)" << std::endl;
 
-
+  std::cout << "t.find(51): " << t.find(51) << std::endl;
 
   return 0;
 }

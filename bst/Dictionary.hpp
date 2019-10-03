@@ -97,6 +97,10 @@ const D& Dictionary<K, D>::remove(const K& key) {
   return _remove(node);
 }
 
+// _remove will remove the node pointed to by the argument. Note that this
+// will alter the pointer you pass in-place, so you should not reuse the
+// pointer variable after calling this function on it. You can't be sure what
+// it points to anymore after the function call.
 template <typename K, typename D>
 const D& Dictionary<K, D>::_remove(TreeNode*& node) {
 
@@ -149,13 +153,36 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
       throw std::runtime_error("error in two-child remove");
     }
 
-    // Swap the node to remove and the IOP
-    _swap_node_pointers(node, iop);
+  std::cerr << "\nBefore swap: [" << node->key << " , " << node->data
+    << " ] [ " << iop->key << " , " << iop->data << " ] " << std::endl;
+
+  std::cerr << "\nn1: " << node << " n2: " << iop
+    << "\n n1l: " << node->left << " n1r: " << node->right
+    << "\n n2l: " << iop->left << " n2r: " << iop->right << std::endl;
+
+    // Swap the node to remove and the IOP.
+    // (This function changes the pointers that are passed in-place so that
+    //  it can alter the tree structure itself, but afterwards you don't
+    //  know what the pointers point to exactly, depending on what happened.
+    //  Therefore you shouldn't reuse these pointers in the current function
+    //  after calling this. See also the note on the _remove function itself
+    //  about how it invalidates pointers that are passed to it; that's why.
+    //  To make things easier, _swap_nodes will return by reference a pointer
+    //  to the tree node that was previously represented by the first
+    //  argument.)
+    TreeNode*& moved_node = _swap_nodes(node, iop);
+
+  std::cerr << "\nAfter swap: [" << node->key << " , " << node->data
+    << " ] [ " << iop->key << " , " << iop->data << " ] " << std::endl;
+
+  std::cerr << "\nn1: " << node << " n2: " << iop
+    << "\n n1l: " << node->left << " n1r: " << node->right
+    << "\n n2l: " << iop->left << " n2r: " << iop->right << std::endl;
 
     // The node pointed to by "node" is now in the IOP position.
 
     // Recurse to remove the node.
-    return _remove(node);
+    return _remove(moved_node);
   }
 }
 
@@ -167,11 +194,15 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
 // of the "cur" node when you call "_iop_of(cur)" explicitly, instead of
 // requiring a "_iop(cur->left)" as originally shown.
 
+// _iop_of: You pass in a pointer to a node, and it returns the pointer to
+// the in-order predecessor node, by reference. If the IOP does not exist,
+// it returns a reference to a node pointer that has value nullptr.
 template <typename K, typename D>
 typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
   TreeNode*& cur) const {
 
-  // get the right-most child of the left subtree of cur
+  // We want to find the in-order predecessor of "cur",
+  // which is the right-most child of the left subtree of cur.
 
   if (!cur) {
     // If cur is nullptr, this is an error case.
@@ -232,11 +263,11 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
   return _rightmost(cur->left);
 }
 
-// Get the right-most child of cur using recursion.
-// Note that we return a pointer by reference, so it should be an actual
-// pointer in our tree that we are returning by reference, not a temporary
-// copy of a pointer. This will be true through recursion, as long as we
-// initially call _rightmost on a pointer in our tree.
+// _rightmost:
+// Find the right-most child of cur using recursion, and return that
+// node pointer, by reference.
+// If you call this function on a nullptr to begin with, it returns the same
+// pointer by reference.
 template <typename K, typename D>
 typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
   TreeNode*& cur) const {
@@ -254,17 +285,169 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
   return _rightmost(cur);
 }
 
+// _swap_nodes:
+// This will swap the logical positions of the nodes by changing the pointers
+// in the tree. You need to be careful, because this function will change the
+// two pointers in-place and invalidate them for use after the call, since
+// they may not point to what you expect anymore. Instead, the function will
+// will return, by reference, a pointer to the tree node that was previously
+// represented by the first argument. If you need to keep track of the new
+// positions of BOTH nodes after the call, for some purpose, then you could
+// extend this to return two new references
 template <typename K, typename D>
-void Dictionary<K, D>::_swap_node_pointers(TreeNode*& node1, TreeNode*& node2) {
+typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_swap_nodes(TreeNode*& node1, TreeNode*& node2) {
 
-  // Swap the respective children pointers of the nodes.
-  // (Note that std::swap passes its arguments by reference and swaps the
-  // values of the original items. Our node pointers are pointers, so it
-  // directly swaps the addresses they hold.)
-  std::swap(node1->left, node2->left);
-  std::swap(node1->right, node2->right);
+  std::cerr << "\nBefore swap: [" << node1->key << " , " << node1->data
+    << " ] [ " << node2->key << " , " << node2->data << " ] " << std::endl;
 
-  // Now swap the pointers to the nodes themselves.
-  std::swap(node1, node2);
+  std::cerr << "\nn1: " << node1 << " n2: " << node2
+    << "\n n1l: " << node1->left << " n1r: " << node1->right
+    << "\n n2l: " << node2->left << " n2r: " << node2->right << std::endl;
+
+  // Now we still have to try swapping the main pointers to these two nodes,
+  // but there's a potential problem: if one of the nodes was the parent of
+  // the other, then the pointers are now messed up: One of the child
+  // pointers will be pointing to its own node, and that ought to point to
+  // the other node instead.
+
+  TreeNode* orig_node1 = node1;
+  TreeNode* orig_node2 = node2;
+
+  if (node1->left == node2) {
+    std::cerr << "\nA\n";
+
+    std::swap(node1->right, node2->right);
+
+    // This also affects the "node2" pointer.
+    node1->left = orig_node2->left;
+    orig_node2->left = node1;
+    node1 = orig_node2;
+
+    // This is the pointer that is now pointing to what was
+    // our original node1 object.
+    return node1->left;
+  }
+  else if (node1->right == node2) {
+    std::cerr << "\nB\n";
+    TreeNode* orig_node2 = node2;
+    node1->right = orig_node2->right;
+    orig_node2->right = node1;
+    node1 = orig_node2;
+    node2 = orig_node2->right;
+    std::swap(node1->left, node2->left);
+    std::swap(node1, node2);
+  }
+  else if (node2->left == node1) {
+    std::cerr << "\nC\n";
+    TreeNode* orig_node1 = node1;
+    node2->left = orig_node1->left;
+    orig_node1->left = node2;
+    node2 = orig_node1;
+    node1 = orig_node1->left;
+    std::swap(node2->right, node1->right);
+    std::swap(node1, node2);
+  }
+  else if (node2->right == node1) {
+    std::cerr << "\nD\n";
+    TreeNode* orig_node1 = node1;
+    node2->right = orig_node1->right;
+    orig_node1->right = node2;
+    node2 = orig_node1;
+    node1 = orig_node1->right;
+    std::swap(node2->left, node1->left);
+    std::swap(node1, node2);
+  }
+  else {
+    std::cerr << "\nE\n";
+    std::swap(node1, node2);
+    std::swap(node1->left, node2->left);
+    std::swap(node1->right, node2->right);
+
+    // This is the pointer that is now pointing to what was
+    // our original node1 object.
+    return node2;
+  }
+  
+
+  // std::cerr << "\nAfter swap: [" << node1->key << " , " << node1->data
+  //   << " ] [ " << node2->key << " , " << node2->data << " ] " << std::endl;
+
+  // std::cerr << "\nn1: " << node1 << " n2: " << node2
+  //   << "\n n1l: " << node1->left << " n1r: " << node1->right
+  //   << "\n n2l: " << node2->left << " n2r: " << node2->right << std::endl;
+
+}
+
+
+template <typename K, typename D>
+void Dictionary<K, D>::_swap_node_pointers_complex(TreeNode*& node1, TreeNode*& node2) {
+
+  // std::cerr << "\nBefore swap: [" << node1->key << " , " << node1->data
+  //   << " ] [ " << node2->key << " , " << node2->data << " ] " << std::endl;
+
+  // std::cerr << "\nn1: " << node1 << " n2: " << node2
+  //   << "\n n1l: " << node1->left << " n1r: " << node1->right
+  //   << "\n n2l: " << node2->left << " n2r: " << node2->right << std::endl;
+
+  // Now we still have to try swapping the main pointers to these two nodes,
+  // but there's a potential problem: if one of the nodes was the parent of
+  // the other, then the pointers are now messed up: One of the child
+  // pointers will be pointing to its own node, and that ought to point to
+  // the other node instead.
+
+  if (node1->left == node2) {
+    std::cerr << "\nA\n";
+    TreeNode* orig_node2 = node2;
+    node1->left = orig_node2->left;
+    orig_node2->left = node1;
+    node1 = orig_node2;
+    node2 = orig_node2->left;
+    std::swap(node1->right, node2->right);
+    std::swap(node1, node2);
+  }
+  else if (node1->right == node2) {
+    std::cerr << "\nB\n";
+    TreeNode* orig_node2 = node2;
+    node1->right = orig_node2->right;
+    orig_node2->right = node1;
+    node1 = orig_node2;
+    node2 = orig_node2->right;
+    std::swap(node1->left, node2->left);
+    std::swap(node1, node2);
+  }
+  else if (node2->left == node1) {
+    std::cerr << "\nC\n";
+    TreeNode* orig_node1 = node1;
+    node2->left = orig_node1->left;
+    orig_node1->left = node2;
+    node2 = orig_node1;
+    node1 = orig_node1->left;
+    std::swap(node2->right, node1->right);
+    std::swap(node1, node2);
+  }
+  else if (node2->right == node1) {
+    std::cerr << "\nD\n";
+    TreeNode* orig_node1 = node1;
+    node2->right = orig_node1->right;
+    orig_node1->right = node2;
+    node2 = orig_node1;
+    node1 = orig_node1->right;
+    std::swap(node2->left, node1->left);
+    std::swap(node1, node2);
+  }
+  else {
+    std::cerr << "\nE\n";
+    std::swap(node1, node2);
+    std::swap(node1->left, node2->left);
+    std::swap(node1->right, node2->right);
+  }
+  
+
+  // std::cerr << "\nAfter swap: [" << node1->key << " , " << node1->data
+  //   << " ] [ " << node2->key << " , " << node2->data << " ] " << std::endl;
+
+  // std::cerr << "\nn1: " << node1 << " n2: " << node2
+  //   << "\n n1l: " << node1->left << " n1r: " << node1->right
+  //   << "\n n2l: " << node2->left << " n2r: " << node2->right << std::endl;
 
 }
