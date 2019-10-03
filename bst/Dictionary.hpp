@@ -5,7 +5,7 @@
  *  but we are renaming it to "Dictionary.hpp" as it includes templated
  *  implementations and would typically be included as a header.
  *  The line numbers in this file do not exactly match what is shown in the
- *  lecture slides.)
+ *  lecture slides. Please read the comments for further explanation.)
  * 
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
@@ -27,19 +27,49 @@
 
 // -------
 
-// Some of the code shown below was not shown directly in lecture, and it
+// Notes from TA Eric doing some maintenance on the code:
+//   Some of the code shown below was not shown directly in lecture, and it
 // differs slightly in some parts, as noted. I've tried to retain the style
 // shown in the lecture code itself, but I made a few changes to help myself
 // understand what I was doing and for the sake of writing explanatory
 // commentary. Please bear with me!
-//   -Eric
+//   This is quite a tricky implementation since nearly all of the member
+// functions pass and return references to the actual pointers that make
+// up the tree structure. Therefore it edits the tree in-place with almost
+// every action, rather than passing copies of anything. Remember that we
+// can return references to data that is persisting in memory storage else-
+// where; in this case, the actual data that the tree organizes is being
+// stored somehow outside of the tree itself (see an example in main.cpp),
+// and the tree just records references to that external storage. We can also
+// return references to the tree's own data members that persist between
+// function calls, such as the actual pointers between nodes that it stores.
+// However, do remember that you must never return a reference to a temporary
+// stack variable that you create in some function; that memory would become
+// immediately invalid after the function call.
+//   There are pros and cons to implementing a tree this way. We can edit a
+// parent's connection to its child without storing pointers to parents or
+// trying to traverse upwards; instead, we assume that when pointers are
+// passed by reference, we are editing the same variable that the parent is
+// holding. There are many other ways to implement trees with layers of
+// indirection in C++; for example, you could use pointers to pointers, or
+// use std::reference_wrapper to store references that can be remapped,
+// which could make it easier to swap nodes. The big challenge with using
+// plain references is that they keep referring to the same thing after
+// being first initialized. For the node data itself, you could also just
+// store value-based copies, which is very easy to write but less memory-
+// efficient. We have an example in the "binary-tree-traversals" directory.
 
 // ------
 
 template <typename K, typename D>
 const D& Dictionary<K, D>::find(const K& key) {
+  // Find the key in the tree starting at the head.
+  // If found, we receive the tree's actual stored pointer to that node
+  //   through return-by-reference.
+  // If not found, then the node returned has a value of nullptr.
   TreeNode*& node = _find(key, head_);
   if (node == nullptr) { throw std::runtime_error("key not found"); }
+  // We found the node, so return the actual data there, by reference.
   return node->data;
 }
 
@@ -102,7 +132,10 @@ void Dictionary<K, D>::insert(const K& key, const D& data) {
 */
 template <typename K, typename D>
 const D& Dictionary<K, D>::remove(const K& key) {
+  // First, find the actual pointer to the node containing this key.
+  // If not found, then the pointer returned will be equal to nullptr.
   TreeNode*& node = _find(key, head_);
+  if (!node) { throw std::runtime_error("error: remove() used on non-existent key"); }
   return _remove(node);
 }
 
@@ -118,20 +151,34 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
   // a const reference to some data removed, and there is none. In practice
   // you would want to add more features to your class for handling these
   // situations efficiently in a way that makes sense for your users.
-  if (!node) { throw std::runtime_error("error: _remove() used on non-existing key"); }
+  if (!node) { throw std::runtime_error("error: _remove() used on non-existent key"); }
+
+  // When you are studying the cases below, remember: Right now, "node" is
+  // the actual pointer that this node's parent holds, which points to this
+  // node. When we change "node", we are remapping the parent's connection
+  // to what is below it.
 
   // Zero child remove:
   if (node->left == nullptr && node->right == nullptr) {
+    // Peek at the data referred to by the node so we can return a reference
+    // to the data later, after the tree node itself is already gone.
     const D& data = node->data;
-    delete node;
-    // The slides originally showed "delete(node)".
+    // The node is a leaf, so it has no descendants to worry about.
+    // We can just delete it. (The slides originally showed "delete(node)".
     // Note that the syntax for "delete" is like an operator, not a function,
-    // so it's not necessary to put the () when you use it.
+    // so it's not necessary to put the () when you use it.)
+    delete node;
+    // It's very important to set "node" to nullptr here. The parent is still
+    // holding this same pointer, so we must mark that the child is gone.
     node = nullptr;
     return data;
   }
   // One-child (left) remove
   else if (node->left != nullptr && node->right == nullptr) {
+    // Similar to the previous case, except that we need to remap the "node"
+    // pointer to point to the node's child, so that the parent of the node
+    // being deleted will retain its connection to the rest of the tree
+    // below this point.
     const D& data = node->data;
     TreeNode* temp = node;
     node = node->left;
@@ -140,6 +187,7 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
   }
   // One-child (right) remove
   else if (node->left == nullptr && node->right != nullptr) {
+    // This case is symmetric to the previous case.
     const D& data = node->data;
     TreeNode* temp = node;
     node = node->right;
@@ -148,6 +196,11 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
   }
   // Two-child remove
   else {
+    // When the node being deleted has two children, we have to be very
+    // careful. The lecture discusses this case in detail. (The versions
+    // of the helper functions being used here are slightly different
+    // compared to lecture, as noted in other comments here.)
+
     // Find the IOP (in-order predecessor) of the current node.
     TreeNode*& iop = _iop_of(node);
 
@@ -168,14 +221,16 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
     //  it can alter the tree structure itself, but afterwards you don't
     //  know what the pointers point to exactly, depending on what happened.
     //  Therefore you shouldn't reuse these pointers in the current function
-    //  after calling this. See also the note on the _remove function itself
-    //  about how it invalidates pointers that are passed to it; that's why.
-    //  To make things easier, _swap_nodes will return by reference a pointer
-    //  to the tree node that was previously represented by the first
-    //  argument, so we can do more work on it afterwards.)
+    //  after calling this. To make things easier, _swap_nodes will return
+    //  a pointer, by reference, that is the updated pointer in the tree
+    //  that is now pointing to the same node we gave as the first argument,
+    //  so we can do more work on that node afterwards.)
     TreeNode*& moved_node = _swap_nodes(node, iop);
 
-    // Recurse to remove the original node itself.
+    // Note that we do not use the original "node" and "iop" pointers by
+    // name after this point. Assume they are invalid now.
+
+    // Recurse to remove the original targeted node at its updated position.
     return _remove(moved_node);
   }
 }
@@ -183,12 +238,11 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
 // -------
 
 // The implementations for the following functions were not shown in the
-// lecture directly.
-
-// The _iop function has been revised a little bit as _iop_of, to
-// take one step to the left before going to the right. This obtains the IOP
-// of the "cur" node when you call "_iop_of(cur)" explicitly, instead of
-// requiring a "_iop(cur->left)" as originally shown.
+// lecture directly. The _iop function has been revised a little bit as
+// "_iop_of", which finds the IOP of the argument you pass; it traverses one
+// step to the left before going to the right. This obtains the IOP of the
+// "cur" node when you call "_iop_of(cur)" explicitly, instead of requiring
+// a call to "_iop(cur->left)" as originally shown.
 
 // _iop_of: You pass in a pointer to a node, and it returns the pointer to
 // the in-order predecessor node, by reference. If the IOP does not exist,
@@ -386,8 +440,8 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_swap_nodes(
     return node2;
   }
 
-  // Some messy debugging output statements, for reference later.
-  // This is a tricky function to work out.
+  // For future reference, here are some debugging output statements that
+  // might be helpful if trouble arises:
 
   // std::cerr << "\nAfter swap: [" << node1->key << " , " << node1->data
   //   << " ] [ " << node2->key << " , " << node2->data << " ] " << std::endl;

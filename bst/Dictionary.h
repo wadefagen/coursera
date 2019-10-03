@@ -26,6 +26,7 @@ class Dictionary {
     const D& find(const K& key);
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
+    
     bool empty() const {
       // If the head_ pointer is null, returns true. Else, returns false.
       // (This happens implicitly because the value of head_ is cast to
@@ -70,6 +71,7 @@ class Dictionary {
 // version of a tree does, then the data itself cannot be edited either. The
 // references it stores are then direct alias to other memory in a read-only
 // mode.
+//   Please see further comments in the file: Dictionary.hpp
 
 // Note 2:
 // This TreeNode constructor initializes its own "data" member using
