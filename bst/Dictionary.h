@@ -21,6 +21,8 @@
 #include <stdexcept>
 // We include <utility> for the std::swap function
 #include <utility>
+// We'll add a "printInOrder" function to help us inspect the results.
+#include <iostream>
 
 template <typename K, typename D>
 class Dictionary {
@@ -33,30 +35,6 @@ class Dictionary {
     const D& find(const K& key);
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
-
-    // Some other public functions (not shown in lecture):
-    
-    // empty: Tells whether the tree is empty or not.
-    bool empty() const {
-      // If the head_ pointer is null, returns true. Else, returns false.
-      // (This happens implicitly because the value of head_ is cast to
-      // bool and logically negated.)
-      return !head_;
-    }
-
-    // clear_tree: Remove the head item until the tree is empty.
-    void clear_tree() {
-      while (head_) {
-        // As long as the head pointer isn't null, we can just look at
-        // what the key is and call remove based on that.
-        remove(head_->key);
-      }
-    }
-
-    // Destructor: We just clear the tree.
-    ~Dictionary() {
-      clear_tree();
-    }
 
   private:
     class TreeNode {
@@ -77,9 +55,68 @@ class Dictionary {
     // the comments in Dictionary.hpp for details about them.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
     const D& _remove(TreeNode*& node);
+    // _remove relies on the following three functions.
     TreeNode*& _iop_of(TreeNode*& cur) const;
-    TreeNode*& _rightmost(TreeNode*& cur) const;
+    TreeNode*& _rightmost_of(TreeNode*& cur) const;
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
+
+    // Below are some extra example functions not shown in lecture.
+    // The main.cpp file has examples.
+  
+  public:
+
+    // empty: Tells whether the tree is empty or not.
+    bool empty() const {
+      // If the head_ pointer is null, returns true. Else, returns false.
+      // (This happens implicitly because the value of head_ is cast to
+      // bool and logically negated.)
+      return !head_;
+    }
+
+  private:
+
+    // printInOrder: Print the tree contents to std::cout using an in-order
+    // traversal. The "_printInOrder" version is for internal use by the
+    // public wrapper function "printInOrder".
+    void _printInOrder(TreeNode* node) {
+      // Base case: if node is nullptr, then print a space and return.
+      if (!node) {
+        std::cout << " ";
+        return;
+      }
+      else {
+        // Recurse left:
+        _printInOrder(node->left);
+        // Print this node:
+        std::cout << "[" << node->key << " : " << node->data << "]";
+        // Recurse right:
+        _printInOrder(node->right);
+      }
+    }
+
+  public:
+
+    void printInOrder() {
+      _printInOrder(head_);
+    }
+
+    // clear_tree: Remove the head item until the tree is empty.
+    void clear_tree() {
+      while (head_) {
+        // As long as the head pointer isn't null, we can just look at
+        // what the key is and call remove based on that.
+        remove(head_->key);
+      }
+    }
+
+    // Destructor: We just clear the tree.
+    // This is public but you shouldn't call it directly. It gets called
+    // when your tree is destroyed, either when you use "delete" on a tree
+    // stored on the heap or when a tree stored on the stack goes out of
+    // scope.
+    ~Dictionary() {
+      clear_tree();
+    }
 
 };
 

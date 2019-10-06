@@ -27,12 +27,17 @@
 
 // -------
 
-// Notes from TA Eric doing some maintenance on the code:
+// Additional implementation notes from TA Eric:
 //   Some of the code shown below was not shown directly in lecture, and it
-// differs slightly in some parts, as noted. I've tried to retain the style
-// shown in the lecture code itself, but I made a few changes to help myself
-// understand what I was doing and for the sake of writing explanatory
-// commentary. Please bear with me!
+// differs slightly in some parts, as noted. Rationale for the changes:
+// I split the action of the original "_iop" function call into separate
+// functions, "_iop_of" and "_rightmost_of", as the original call required
+// part of the method to be performed in the argument list; in main.cpp, I
+// added a separate storage vector to avoid retaining references to temporary
+// objects, which some compilers may not support; and the node-swapping
+// function was redesigned to resolve some issues, which also required adding
+// a return value. These are subtle issues that aren't discussed directly in
+// lecture and they don't affect the underlying lessons.
 //   This is quite a tricky implementation since nearly all of the member
 // functions pass and return references to the actual pointers that make
 // up the tree structure. Therefore it edits the tree in-place with almost
@@ -50,14 +55,21 @@
 // parent's connection to its child without storing pointers to parents or
 // trying to traverse upwards; instead, we assume that when pointers are
 // passed by reference, we are editing the same variable that the parent is
-// holding. There are many other ways to implement trees with layers of
-// indirection in C++; for example, you could use pointers to pointers, or
-// use std::reference_wrapper to store references that can be remapped,
-// which could make it easier to swap nodes. The big challenge with using
-// plain references is that they keep referring to the same thing after
-// being first initialized. For the node data itself, you could also just
-// store value-based copies, which is very easy to write but less memory-
-// efficient. We have an example in the "binary-tree-traversals" directory.
+// holding.
+//   The big challenge with using plain references is that they keep
+// referring to the same thing after being first initialized. If you need to
+// re-bind the reference to something else, it's easier to use pointers; you
+// can make pointers to pointers for layers of indirection, and explicitly
+// control how those addresses are stored and dereferenced. There is also an
+// advanced mechanism called std::reference_wrapper that you can use to
+// simulate storing references that may be re-bound, as many STL containers
+// would require.
+//   For the node data itself, instead of referencing external items, you
+// could instead just store value-based copies, which is very easy to write
+// but less memory-efficient. We have an example in the directory
+// "binary-tree-traversals". But there are many other advanced ways to do
+// that in C++ as well. There are some additional notes about the options for
+// the underlying data storage in main.cpp in the current directory.
 
 // ------
 
@@ -310,16 +322,16 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
 
   // Find the rightmost child pointer under the left subtree,
   // and return it by reference.
-  return _rightmost(cur->left);
+  return _rightmost_of(cur->left);
 }
 
-// _rightmost:
+// _rightmost_of:
 // Find the right-most child of cur using recursion, and return that
 // node pointer, by reference.
 // If you call this function on a nullptr to begin with, it returns the same
 // pointer by reference.
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
+typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost_of(
   TreeNode*& cur) const {
 
   // Base case 1: If cur is null, then just return it by reference.
@@ -332,7 +344,7 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost(
 
   // General case: The cur pointer is not null, and it does have a right
   // child, so we should recurse to the right and return whatever we get.
-  return _rightmost(cur->right);
+  return _rightmost_of(cur->right);
 }
 
 // _swap_nodes:
@@ -388,7 +400,9 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_swap_nodes(
 
     // Make "node1" take its leftmost grandchild as its left child.
     // The next line also affects the actual "node2" pointer, implicitly,
-    // so we won't try to use the "node2" pointer after this.
+    // so we won't try to use the "node2" pointer after this; it will no
+    // longer point to the original "node2" node that we would expect from
+    // the naming.
     node1->left = orig_node2->left;
     // Now the original node2 needs to take the original node1 as its left
     // child.

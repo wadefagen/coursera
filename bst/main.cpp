@@ -13,17 +13,37 @@
 
 int main() {
 
-  // We'll fill a vector with some values matching each index.
-  // This is so that we have an existing value to reference with each
-  // tree entry in our dictionary. The lecture video shows literal values
-  // being inserted directly, but some compiler versions don't support
-  // storing references to temporary literal values. In general, it's a good
-  // idea to only store references to memory that you have guaranteed will
-  // be valid for some duration of the code; in this case, we can ensure
-  // that the vector of actual data items will stay in scope for the rest
-  // of the main function, as long as our tree will exist.
+  // First, we'll fill a vector with some values matching each index, which
+  // will be the actual external memory that our tree refers to with the
+  // references in each tree node.
 
-  // Initialize a vector 100 elements long, filled with 0s
+  // This is so that we have an existing value to reference with each tree
+  // entry in our dictionary. The lecture video shows literal values being
+  // passed to insert() directly, but some compiler versions don't support
+  // storing references to temporary literal values. In general, it's a good
+  // idea to only store references to memory that you have guaranteed will be
+  // valid for some duration of the code; in this case, we can ensure that
+  // the vector of actual data items will stay in scope for the rest of the
+  // main function, as long as our tree will exist.
+
+  // Another important thing to remember here: If you insert more items into
+  // a std::vector after you begin recording references or pointers to its
+  // contents, then those references and pointers may be invalidated due to
+  // a resize and reallocation of the vector. So in practice, you may not
+  // want to store references to external storage in this way, but instead
+  // allow your data structure to directly store contents within itself in
+  // a way that can be managed at all times throughout any updates. (If you
+  // want to be able to do fast swaps inside of your data structure without
+  // copying large pieces of data, as the reference-based design allows, but
+  // you also want to have a robust and reusable structure that protects its
+  // contents, then there are advanced ways to design your structure to
+  // maintain both the organizational structure, like the tree hierarchy, as
+  // well as the backing storage, together. Or, you can use "smart" pointer
+  // types from recent versions of C++ that can move memory ownership around
+  // without making copies or leaking memory. However, that's beyond the
+  // scope of the current course sequence.)
+
+  // Initialize a vector 100 elements long, filled with 0 values
   const int V_SIZE = 100;
   std::vector<int> v(V_SIZE, 0);
   // Reassign each item to hold a value matching its index
@@ -65,7 +85,11 @@ int main() {
 
     std::cout << "Dictionary empty after insertions? " << t.empty() << std::endl;
 
-    std::cout << "Showing that 51 has been inserted:" << std::endl;
+    std::cout << "Current tree contents in order:" << std::endl;
+    t.printInOrder();
+    std::cout << std::endl;
+
+    std::cout << "Using find to show that 51 has been inserted:" << std::endl;
     std::cout << "t.find(51): " << t.find(51) << std::endl;
 
     std::cout << "Trying to remove some items:" << std::endl;
@@ -73,25 +97,29 @@ int main() {
     std::cout << "t.remove(51): " << t.remove(51) << " (one child remove)" << std::endl;
     std::cout << "t.remove(19): " << t.remove(19) << " (two child remove)" << std::endl;
 
+    std::cout << "Current tree contents in order:" << std::endl;
+    t.printInOrder();
+    std::cout << std::endl;
+
     // The following "find" query throws an exception when the item is not
     // found, as shown in lecture. Here's a little example of exception
     // handling using the "try...catch" syntax. (If we didn't use this to
     // catch the exception, then the program would just crash to the terminal
     // and display the exception error message there.)
     try {
-      std::cout << "Attempting to find a missing item: " << std::endl;
+      std::cout << "Attempting to find a non-existent item, 51: " << std::endl;
       std::cout << "t.find(51): " << t.find(51) << std::endl;
     }
-    catch (std::exception& e) {
+    catch (const std::runtime_error& e) {
       std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
     }
 
     // Another example
     try {
-      std::cout << "Attempting to remove a missing item: " << std::endl;
+      std::cout << "Attempting to remove a non-existent item, 99: " << std::endl;
       std::cout << "t.remove(99): " << t.remove(99) << std::endl;
     }
-    catch (std::exception& e) {
+    catch (const std::runtime_error& e) {
       std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
     }
   }
