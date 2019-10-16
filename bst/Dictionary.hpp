@@ -85,6 +85,28 @@ const D& Dictionary<K, D>::find(const K& key) {
   return node->data;
 }
 
+// Note about the use of "typename" in the below definition:
+// This is required so that although we're writing at global scope here, we
+// can refer to the TreeNode type definition that is part of Dictionary.
+// Since we're writing this function definition outside of the primary class
+// definition, the compiler needs help to understand that what follows is
+// expected to be the name of a type defined within a specific templated
+// class.
+
+// Newer versions of the C++ standard may be smarter about auto-detecting
+// this. Until then, it's hard to summarize when you need to write
+// "typename" at global scope and when you don't, but in general, you might
+// need to write it before a templated type, especially a type belonging to
+// another class namespace. If you get a compiler error that looks like this:
+//  "missing 'typename' prior to dependent type name"
+//  "need 'typename' before ... because ... is a dependent scope"
+//   (etc.)
+// then you probably need to put "typename" before the type.
+
+// The fully-qualified return type of the below function is:
+// Dictionary<K, D>::TreeNode*&
+// That is a pointer to a Dictionary<K, D>::TreeNode, returned by reference.
+
 template <typename K, typename D>
 typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_find(
   const K& key, TreeNode*& cur) const {
