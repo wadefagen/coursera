@@ -22,6 +22,7 @@
 // We include <utility> for the std::swap function
 #include <utility>
 // We'll add a "printInOrder" function to help us inspect the results.
+// This will require std::cout from <iostream>.
 #include <iostream>
 
 template <typename K, typename D>
