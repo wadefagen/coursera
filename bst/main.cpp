@@ -51,10 +51,30 @@ int main() {
     v[i] = i;
   }
 
-  // Let's create an inner scoping block here to restrict the lifetime
-  // of our tree to be shorter than that of the data vector. The vector
-  // will be destroyed only after the tree has already gone out of scope
-  // and been destroyed at the end.
+  // We'll also create some persistent std::string data items that our tree
+  // will be able to store references to safely.
+  // (As described above, this is necessary to make the example safely
+  // compatible with various compilers according to the C++ standard, since
+  // our tree will be storing explicit references to data that is outside of
+  // the tree instead of managed by the tree internally. If we pass the
+  // quoted string literals to the insert() calls below instead of using
+  // these persistent variables, then on some systems, the attempt to store
+  // a reference to a temporary string literal will fail.)
+
+  const std::string str_thirty_seven("thirty seven");
+  const std::string str_nineteen("nineteen");
+  const std::string str_fifty_one("fifty one");
+  const std::string str_fifty_five("fifty five");
+  const std::string str_four("four");
+  const std::string str_eleven("eleven");
+  const std::string str_twenty("twenty");
+  const std::string str_two("two");
+
+  // Let's create an inner scoping block here to restrict the lifetime of our
+  // tree to be shorter than that of the ints and strings, since the tree
+  // will directly reference those items. This way, the ints and strings will
+  // be destroyed only after the tree has already gone out of scope at the
+  // end, so the tree will be destroyed before the objects that it refers to.
   {
     Dictionary<int, std::string> t;
 
@@ -69,14 +89,14 @@ int main() {
     // Note that we insert items here by reference to the actual items in the
     // vector "v" where they reside. The [] indexing operator for std::vector
     // returns a reference.
-    t.insert(v[37], "thirty seven");
-    t.insert(v[19], "nineteen");
-    t.insert(v[51], "fifty one");
-    t.insert(v[55], "fifty five");
-    t.insert(v[4], "four");
-    t.insert(v[11], "eleven");
-    t.insert(v[20], "twenty");
-    t.insert(v[2], "two");
+    t.insert(v[37], str_thirty_seven);
+    t.insert(v[19], str_nineteen);
+    t.insert(v[51], str_fifty_one);
+    t.insert(v[55], str_fifty_five);
+    t.insert(v[4], str_four);
+    t.insert(v[11], str_eleven);
+    t.insert(v[20], str_twenty);
+    t.insert(v[2], str_two);
 
     // When we call find and remove below, we don't need to use v[] and we
     // can specify a number just by a literal value. That's because our
