@@ -16,6 +16,9 @@
 // understanding how this AVL example is implemented. In particular, this
 // example was directly based on the code in the bst directory, and many
 // of the specific code comments in that project also apply to this example.
+// (Anything that appears to lack comments in this AVL example was probably
+// already explained in the other examples. There may be some comments in
+// this example that are nearly the same as those in the BST example.)
 
 // This example is based on original work by Prof. Wade Fagen-Ulmschneider
 // as shown in lecture. The course staff have edited it slightly and added
@@ -30,6 +33,8 @@
 // We'll add a "printInOrder" function to help us inspect the results.
 // This will require std::cout from <iostream>.
 #include <iostream>
+// We include <algorithm> for std::max
+#include <algorithm>
 
 template <typename K, typename D>
 class AVL {
@@ -50,9 +55,10 @@ class AVL {
         const K& key;
         const D& data;
         TreeNode *left, *right;
+        int height;
         // **See note 2 below about how this initialization list is styled.
         TreeNode(const K& key, const D& data)
-          : key(key), data(data), left(nullptr), right(nullptr) { }
+          : key(key), data(data), left(nullptr), right(nullptr), height(0) { }
     };
 
     TreeNode *head_;
@@ -67,10 +73,25 @@ class AVL {
     TreeNode*& _rightmost_of(TreeNode*& cur) const;
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
 
-    // Below are some extra example functions not shown in lecture.
-    // The main.cpp file has examples.
-  
+    // Update the height of the specified node, based on the subtree
+    // that it roots.
+    void _updateHeight(TreeNode*& cur);
+
   public:
+
+    // get_height: A wrapper for checking the height of a subtree.
+    // If a node doesn't exist (nullptr), then return -1.
+    // Otherwise, return the node's previously-recorded subtree height.
+    int get_height(const TreeNode*& node) const {
+      if (!node) {
+        // A non-existent node has a height of 1
+        return -1;
+      }
+      else {
+        // We assume that an existing node already has an updated height
+        return node->height;
+      }
+    }
 
     // empty: Tells whether the tree is empty or not.
     bool empty() const {

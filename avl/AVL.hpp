@@ -487,4 +487,11 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_swap_nodes(
 
 }
 
+template <typename K, typename D>
+void AVL<K, D>::_updateHeight(TreeNode*& cur) {
+  if (!cur) return;
+
+  cur->height = 1 + std::max(get_height(cur->left), get_height(cur->right));
+}
+
 
