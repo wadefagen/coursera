@@ -74,7 +74,7 @@
 // ------
 
 template <typename K, typename D>
-const D& Dictionary<K, D>::find(const K& key) {
+const D& AVL<K, D>::find(const K& key) {
   // Find the key in the tree starting at the head.
   // If found, we receive the tree's actual stored pointer to that node
   //   through return-by-reference.
@@ -87,7 +87,7 @@ const D& Dictionary<K, D>::find(const K& key) {
 
 // Note about the use of "typename" in the below definition:
 // This is required so that although we're writing at global scope here, we
-// can refer to the TreeNode type definition that is part of Dictionary.
+// can refer to the TreeNode type definition that is part of AVL.
 // Since we're writing this function definition outside of the primary class
 // definition, the compiler needs help to understand that what follows is
 // expected to be the name of a type defined within a specific templated
@@ -104,11 +104,11 @@ const D& Dictionary<K, D>::find(const K& key) {
 // then you probably need to put "typename" before the type.
 
 // The fully-qualified return type of the below function is:
-// Dictionary<K, D>::TreeNode*&
-// That is a pointer to a Dictionary<K, D>::TreeNode, returned by reference.
+// AVL<K, D>::TreeNode*&
+// That is a pointer to a AVL<K, D>::TreeNode, returned by reference.
 
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_find(
+typename AVL<K, D>::TreeNode*& AVL<K, D>::_find(
   const K& key, TreeNode*& cur) const {
 
   // (Please also see the implementation of _iop_of below, which discusses
@@ -146,10 +146,10 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_find(
 
 /**
 * insert()
-* Inserts `key` and associated `data` into the Dictionary.
+* Inserts `key` and associated `data` into the AVL tree.
 */
 template <typename K, typename D>
-void Dictionary<K, D>::insert(const K& key, const D& data) {
+void AVL<K, D>::insert(const K& key, const D& data) {
   // Find the place where the item should go.
   TreeNode *& node = _find(key, head_);
   // For the sake of this example, let's disallow duplicates. If the node
@@ -162,10 +162,10 @@ void Dictionary<K, D>::insert(const K& key, const D& data) {
 
 /**
 * remove()
-* Removes `key` from the Dictionary. Returns the associated data.
+* Removes `key` from the AVL tree. Returns the associated data.
 */
 template <typename K, typename D>
-const D& Dictionary<K, D>::remove(const K& key) {
+const D& AVL<K, D>::remove(const K& key) {
   // First, find the actual pointer to the node containing this key.
   // If not found, then the pointer returned will be equal to nullptr.
   TreeNode*& node = _find(key, head_);
@@ -178,7 +178,7 @@ const D& Dictionary<K, D>::remove(const K& key) {
 // pointer variable after calling this function on it. You can't be sure what
 // it points to anymore after the function call.
 template <typename K, typename D>
-const D& Dictionary<K, D>::_remove(TreeNode*& node) {
+const D& AVL<K, D>::_remove(TreeNode*& node) {
 
   // If the node we are trying to remove is a nullptr, then it's an error,
   // as even if we'd like to "do nothing" here as a base case, we must return
@@ -282,7 +282,7 @@ const D& Dictionary<K, D>::_remove(TreeNode*& node) {
 // the in-order predecessor node, by reference. If the IOP does not exist,
 // it returns a reference to a node pointer that has value nullptr.
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
+typename AVL<K, D>::TreeNode*& AVL<K, D>::_iop_of(
   TreeNode*& cur) const {
 
   // We want to find the in-order predecessor of "cur",
@@ -353,7 +353,7 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_iop_of(
 // If you call this function on a nullptr to begin with, it returns the same
 // pointer by reference.
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost_of(
+typename AVL<K, D>::TreeNode*& AVL<K, D>::_rightmost_of(
   TreeNode*& cur) const {
 
   // Base case 1: If cur is null, then just return it by reference.
@@ -379,7 +379,7 @@ typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_rightmost_of(
 // positions of BOTH nodes after the call, for some purpose, then you could
 // extend this to return two new references.
 template <typename K, typename D>
-typename Dictionary<K, D>::TreeNode*& Dictionary<K, D>::_swap_nodes(
+typename AVL<K, D>::TreeNode*& AVL<K, D>::_swap_nodes(
   TreeNode*& node1, TreeNode*& node2) {
 
   // More information on the problem we need to solve here:
