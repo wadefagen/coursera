@@ -1,12 +1,12 @@
 /**
  * AVL tree auxiliary definitions
- * 
+ *
  * (Some versions of the lecture videos called this file "AVL.cpp",
  *  but we are renaming it to "AVL.hpp" as it includes templated
  *  implementations and would typically be included as a header.
  *  The line numbers in this file do not exactly match what is shown in the
  *  lecture slides. Please read the comments for further explanation.)
- * 
+ *
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
  */
@@ -294,7 +294,7 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_iop_of(
     // we can check for that result.)
     return cur;
   }
-  
+
   if (!(cur->left)) {
     // If cur has no left child, this is an error case.
     // Just return cur->left by reference. (Since cur->left has the value of
@@ -489,9 +489,84 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_swap_nodes(
 
 template <typename K, typename D>
 void AVL<K, D>::_updateHeight(TreeNode*& cur) {
+  // If the node is nullptr, then do nothing and return.
   if (!cur) return;
-
+  // Otherwise update the height to be one more than the greater of the
+  // two children's heights. The get_height function safely handles the
+  // case where a child is just nullptr (no node exists), in which case
+  // its implicit height is -1.
   cur->height = 1 + std::max(get_height(cur->left), get_height(cur->right));
 }
+
+template <typename K, typename D>
+void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
+
+  // Base case for safety: do nothing if cur is nullptr.
+  if (!cur) return;
+
+  // Calculate the balance factor for this node:
+  const int initial_balance = get_balance_factor(cur);
+
+  // Error checking to make sure our implementation doesn't have a bug
+  if (initial_balance < -2 || initial_balance > 2) {
+    std::string msg("ERROR: Detected invalid initial balance factor: ");
+    msg += std::to_string(initial_balance);
+    msg += " ; This should never happen here.";
+    throw std::runtime_error(msg);
+  }
+
+  // Check if the current node is not in balance,
+  // and if it is not, then detect the direction of the imbalance and
+  // perform a rotation to correct it.
+
+  if (initial_balance == -2) {
+    const int l_balance = get_balance_factor(cur->left);
+    if (l_balance == -1) {
+      _rotateRight(cur);
+    }
+    else if (l_balance == 1) {
+      _rotateLeftRight(cur);
+    }
+    else {
+      // Error checking
+      std::string msg("ERROR: l_balance has unexpected value: ");
+      msg += std::to_string(l_balance);
+      msg += " ; This should never happen here.";
+      throw std::runtime_error(msg);
+    }
+  }
+  else if (initial_balance == 2) {
+    const int r_balance = get_balance_factor(cur->right);
+    if (r_balance == 1) {
+      _rotateLeft(cur);
+    }
+    else if (r_balance == -1) {
+      _rotateRightLeft(cur);
+    }
+    else {
+      // Error checking
+      std::string msg("ERROR: r_balance has unexpected value: ");
+      msg += std::to_string(r_balance);
+      msg += " ; This should never happen here.";
+      throw std::runtime_error(msg);
+    }
+  }
+
+  // If anything rotated, we need to relabel this node's height.
+  _updateHeight(cur);
+
+  // Final error checking:
+  // We expect that this should have fixed any imbalance now.
+  const int final_balance = get_balance_factor(cur);
+  if (final_balance < -1 || final_balance > 1) {
+    std::string msg("ERROR: Invalid balance factor after _ensureBalance: ");
+    msg += std::to_string(final_balance);
+    msg += " ; Something went wrong.";
+    throw std::runtime_error(msg);
+  }
+
+}
+
+
 
 

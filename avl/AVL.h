@@ -20,9 +20,12 @@
 // already explained in the other examples. There may be some comments in
 // this example that are nearly the same as those in the BST example.)
 
-// This example is based on original work by Prof. Wade Fagen-Ulmschneider
-// as shown in lecture. The course staff have edited it slightly and added
-// code comments, so the line numbering will not match up exactly.
+// This example is based on original work by Prof. Wade Fagen-Ulmschneider as
+// shown in lecture. The course staff have edited it slightly and added code
+// comments, so the line numbering will not match up exactly. Some repeated
+// chunks of code were refactored into small helper functions, such as
+// get_balance_factor, to better check for correctness. There are also some
+// additional lines of code here and there for error checking. -Eric
 
 #pragma once
 
@@ -77,11 +80,19 @@ class AVL {
     // that it roots.
     void _updateHeight(TreeNode*& cur);
 
+    // Ensure that the balance factor of specified node has magnitude
+    // no greater than 1. This calls rotation functions as necessary to
+    // rebalance the subtree rooted here.
+    void _ensureBalance(TreeNode*& cur);
+
   public:
 
     // get_height: A wrapper for checking the height of a subtree.
     // If a node doesn't exist (nullptr), then return -1.
     // Otherwise, return the node's previously-recorded subtree height.
+    // (This function was just shown as "height(...)" in some of the lecture
+    //  videos. It's been renamed here to clarify that it's different from
+    //  the node's height member variable.)
     int get_height(const TreeNode*& node) const {
       if (!node) {
         // A non-existent node has a height of 1
@@ -90,6 +101,19 @@ class AVL {
       else {
         // We assume that an existing node already has an updated height
         return node->height;
+      }
+    }
+
+    // get_balance_factor: A helper function for safely calculating the balance
+    // factor of the node that is passed as the argument.
+    int get_balance_factor(const TreeNode*& node) const {
+      if (!node) {
+        // A non-existent node has a balance factor of 0
+        return 0;
+      }
+      else {
+        // Calculate the balannce factor safely and return it.
+        return get_height(node->right) - get_height(node->left);
       }
     }
 
