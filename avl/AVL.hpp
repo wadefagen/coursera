@@ -570,8 +570,9 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 template <typename K, typename D>
 void AVL<K, D>::_rotateLeft(TreeNode*& cur) {
 
-  // Here, cur is the original top-most node that roots the subtree
-  // where we will do the left rotation.
+  // Here, cur points to the original top-most node that roots the subtree
+  // where we will do the left rotation. You might also want to refer
+  // to the lecture slides about "generic left rotation".
 
   // If these error conditions arise, something already went wrong before
   // this function was called.
@@ -583,10 +584,15 @@ void AVL<K, D>::_rotateLeft(TreeNode*& cur) {
   }
 
   // x points to the node that was originally the subtree root.
+  // (In the lecture on AVL algorithms, on the diagrams for generic left
+  //  rotation, this is shown as node "b".)
   TreeNode* x = cur;
   // y points to the node that was originally the right child.
+  // (This was shown as node "c".)
   TreeNode* y = cur->right;
   // z points to the node that was originally the left child of the right child.
+  // (This was shown as subtree "t2" in lecture. Understand that this node,
+  //  if present, is simply the root of that subtree.)
   TreeNode* z = cur->right->left;
 
   // Let node x's new right child be the old left child of node y.
@@ -630,16 +636,87 @@ void AVL<K, D>::_rotateRight(TreeNode*& cur) {
 }
 
 template <typename K, typename D>
-void AVL<K, D>::_rotateLeftRight(TreeNode*& cur) {
+void AVL<K, D>::_rotateRightLeft(TreeNode*& cur) {
 
+  // Here, cur points to the original top-most node that roots the subtree
+  // where we will do the rotation. You might also want to refer to the
+  // lecture slides about "generic right-left rotation".
+
+  // We have to be careful about the distinction between making extra
+  // temporary copies of pointers to node addresses here vs. operating
+  // directly on the captive child pointers that are in the nodes we're
+  // dealing with. We need to be sure to actually rewire the node
+  // connections that are in the tree by changing the actual pointers,
+  // not simply making copies of pointers and doing things to the copies.
+  // In this case, all it really means is we must call _rotateLeft directly
+  // on the cur pointer that was passed by reference.
+
+  if (!cur) {
+    throw std::runtime_error("ERROR: _rotateRightLeft called on nullptr");
+  }
+
+  // Perform a right rotation on the right subtree under cur.
+  _rotateRight(cur->right);
+
+  // Perform a left rotation on cur.
+  _rotateLeft(cur);
 
 }
 
 template <typename K, typename D>
-void AVL<K, D>::_rotateRightLeft(TreeNode*& cur) {
+void AVL<K, D>::_rotateLeftRight(TreeNode*& cur) {
 
+  // Similar to _rotateRightLeft
+
+  if (!cur) {
+    throw std::runtime_error("ERROR: _rotateLeftRight called on nullptr");
+  }
+
+  _rotateLeft(cur->left);
+
+  _rotateRight(cur);
+
+}
+
+template <typename K, typename D>
+const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
+
+  if (!targetNode) {
+    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode) called on nullptr");
+  }
+
+  // Kick-start the IOP-finding process with the left child of the target,
+  // although we ultimately want to find the right-most child of that.
+  return _iopRemove(targetNode, targetNode->left);
+}
+
+template <typename K, typename D>
+const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopNode) {
+
+  if (!targetNode) {
+    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode): targetNode is null");
+  }
+
+  if (!iopNode) {
+    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode): iopNode is null");
+  }
+
+  if (iopNode->right != nullptr) {
+    // IoP not found, keep doing deeper:
+    const D& d = _iopRemove(targetNode, iopNode->right);
+    if (iopNode) {
+      _ensureBalance(iopNode);
+    }
+    return d;
+  }
+  else {
+    // Found IoP. Swap the location:
+    TreeNode*& movedTarget = _swap_nodes(targetNode, iopNode);
+  }
 
 
 }
 
 
+// Include the last a series of chained header files
+#include "AVL-extra.hpp"

@@ -94,6 +94,8 @@ int main() {
     t.printInOrder();
     std::cout << std::endl;
 
+    t.printVertical();
+
     // The following "find" query throws an exception when the item is not
     // found, as shown in lecture. Here's a little example of exception
     // handling using the "try...catch" syntax. (If we didn't use this to

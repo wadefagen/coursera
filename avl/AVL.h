@@ -71,9 +71,16 @@ class AVL {
     // the comments in AVL.hpp for details about them.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
     const D& _remove(TreeNode*& node);
-    // _remove relies on the following three functions.
-    TreeNode*& _iop_of(TreeNode*& cur) const;
-    TreeNode*& _rightmost_of(TreeNode*& cur) const;
+    
+    // _remove relies on the following functions. (The organization is a
+    // little different from the bst directory example.)
+
+    // _iopRemove: targetNode is the node to remove, and iopNode is the
+    // in-order predecessor to be used in a swap (which must be found first).
+    // The single-argument version of _iopRemove calls the other version,
+    // just as a convenience wrapper to get things started.
+    const D& _iopRemove(TreeNode*& targetNode);
+    const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode);
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
 
     // Update the height of the specified node, based on the subtree
@@ -87,12 +94,12 @@ class AVL {
 
     // These functions perform the specified balancing rotation on the
     // subtree that is rooted at the specified node.
-    // Refer to the implementations of _rotateLeft and _rotateLeftRight
+    // Refer to the implementations of _rotateLeft and _rotateRightLeft
     // for more details. The other functions are similar.
     void _rotateLeft(TreeNode*& cur);
-    void _rotateLeftRight(TreeNode*& cur);
     void _rotateRight(TreeNode*& cur);
     void _rotateRightLeft(TreeNode*& cur);
+    void _rotateLeftRight(TreeNode*& cur);
 
   public:
 
@@ -139,7 +146,7 @@ class AVL {
     // printInOrder: Print the tree contents to std::cout using an in-order
     // traversal. The "_printInOrder" version is for internal use by the
     // public wrapper function "printInOrder".
-    void _printInOrder(TreeNode* node) {
+    void _printInOrder(TreeNode* node) const {
       // Base case: if node is nullptr, then print a space and return.
       if (!node) {
         std::cout << " ";
@@ -157,9 +164,13 @@ class AVL {
 
   public:
 
-    void printInOrder() {
+    void printInOrder() const {
       _printInOrder(head_);
     }
+
+    // Prints the tree vertically without any fancy formatting in the margin.
+    // For debugging purposes.
+    void printVertical() const;
 
     // clear_tree: Remove the head item until the tree is empty.
     void clear_tree() {
