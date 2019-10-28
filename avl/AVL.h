@@ -85,6 +85,15 @@ class AVL {
     // rebalance the subtree rooted here.
     void _ensureBalance(TreeNode*& cur);
 
+    // These functions perform the specified balancing rotation on the
+    // subtree that is rooted at the specified node.
+    // Refer to the implementations of _rotateLeft and _rotateLeftRight
+    // for more details. The other functions are similar.
+    void _rotateLeft(TreeNode*& cur);
+    void _rotateLeftRight(TreeNode*& cur);
+    void _rotateRight(TreeNode*& cur);
+    void _rotateRightLeft(TreeNode*& cur);
+
   public:
 
     // get_height: A wrapper for checking the height of a subtree.

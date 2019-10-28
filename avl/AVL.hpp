@@ -567,6 +567,79 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 
 }
 
+template <typename K, typename D>
+void AVL<K, D>::_rotateLeft(TreeNode*& cur) {
 
+  // Here, cur is the original top-most node that roots the subtree
+  // where we will do the left rotation.
+
+  // If these error conditions arise, something already went wrong before
+  // this function was called.
+  if (!cur) {
+    throw std::runtime_error("ERROR: _rotateLeft called on nullptr");
+  }
+  if (!cur->right) {
+    throw std::runtime_error("ERROR: _rotateLeft: right child is nullptr");
+  }
+
+  // x points to the node that was originally the subtree root.
+  TreeNode* x = cur;
+  // y points to the node that was originally the right child.
+  TreeNode* y = cur->right;
+  // z points to the node that was originally the left child of the right child.
+  TreeNode* z = cur->right->left;
+
+  // Let node x's new right child be the old left child of node y.
+  x->right = z;
+  // Node y's new left child is x. This puts node y on top.
+  y->left = x;
+  // Since cur is the original tree node pointer that points to the root
+  // of this subtree, we need it to now point to the new root of the
+  // subtree, which is node y.
+  cur = y;
+
+  // Nodes x and y have changed heights, but z should not have changed height.
+  _updateHeight(x);
+  _updateHeight(y);
+
+}
+
+template <typename K, typename D>
+void AVL<K, D>::_rotateRight(TreeNode*& cur) {
+
+  // This implementation is a mirror image of _rotateLeft.
+
+  if (!cur) {
+    throw std::runtime_error("ERROR: _rotateRight called on nullptr");
+  }
+  if (!cur->left) {
+    throw std::runtime_error("ERROR: _rotateRight: left child is nullptr");
+  }
+
+  TreeNode* x = cur;
+  TreeNode* y = cur->left;
+  TreeNode* z = cur->left->right;
+
+  x->left = z;
+  y->right = x;
+  cur = y;
+
+  _updateHeight(x);
+  _updateHeight(y);
+
+}
+
+template <typename K, typename D>
+void AVL<K, D>::_rotateLeftRight(TreeNode*& cur) {
+
+
+}
+
+template <typename K, typename D>
+void AVL<K, D>::_rotateRightLeft(TreeNode*& cur) {
+
+
+
+}
 
 
