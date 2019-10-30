@@ -128,11 +128,43 @@ void AVL<K, D>::insert(const K& key, const D& data) {
 */
 template <typename K, typename D>
 const D& AVL<K, D>::remove(const K& key) {
-  // First, find the actual pointer to the node containing this key.
-  // If not found, then the pointer returned will be equal to nullptr.
-  TreeNode*& node = _find(key, head_);
-  if (!node) { throw std::runtime_error("error: remove() used on non-existent key"); }
-  return _remove(node);
+
+  // new wrapper between "remove" and "_remove":
+  return _find_and_remove(key, head_);
+
+}
+
+template <typename K, typename D>
+const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
+
+  // We let the "remove" function make the initial call to this one.
+  // The basic logic here is similar to _find, but now we want to take
+  // advantage of the call stack to ensure balance of everything from
+  // the removal point up to the root, after we do the remove.
+
+  if (cur == nullptr) {
+    // Key not found
+    throw std::runtime_error("error: remove() used on non-existent key");
+  }
+  else if (key == cur->key) {
+    // Found it: REMOVE HERE
+    return _remove(cur);
+  }
+  else if (key < cur->key) {
+    // Search left
+    const D& d = _find_and_remove(key, cur->left);
+    // Ensure balance of this ancestor on the way back up the call stack:
+    _ensureBalance(cur);
+    return d;
+  }
+  else {
+    // Search right
+    const D& d = _find_and_remove(key, cur->right);
+    // Ensure balance of this ancestor on the way back up the call stack:
+    _ensureBalance(cur);
+    return d;
+  }
+
 }
 
 // _remove will remove the node pointed to by the argument. Note that this
@@ -559,7 +591,15 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 
   // Kick-start the IOP-finding process with the left child of the target,
   // although we ultimately want to find the right-most child of that.
-  return _iopRemove(targetNode, targetNode->left);
+  const D& d = _iopRemove(targetNode, targetNode->left);
+
+  // Make sure we also check the balance of the node that ends up in
+  // targetNode's original position, on the way back up the call stack.
+  // The rest of the trail up to the root will be re-checked by whichever
+  // function called _iopRemove in the first place.
+  _ensureBalance(targetNode);
+
+  return d;
 }
 
 template <typename K, typename D>
