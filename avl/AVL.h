@@ -83,13 +83,18 @@ class AVL {
     const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode);
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
 
-    // Update the height of the specified node, based on the subtree
-    // that it roots.
+    // Update the height of the specified node, based on the existing
+    // heights of its children, which we assume are correct. (This function
+    // is not recursive. It can do a fast update of the specified node but
+    // this relies on the node's children already having correct, updated
+    // heights.)
     void _updateHeight(TreeNode*& cur);
 
     // Ensure that the balance factor of specified node has magnitude
     // no greater than 1. This calls rotation functions as necessary to
-    // rebalance the subtree rooted here.
+    // rebalance the subtree rooted here. As a result, we should also
+    // subsequently call this function on those nodes up the path of
+    // ancestory towards the root node.
     void _ensureBalance(TreeNode*& cur);
 
     // These functions perform the specified balancing rotation on the

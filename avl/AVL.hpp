@@ -28,48 +28,10 @@
 // -------
 
 // Additional implementation notes from TA Eric:
-//   Some of the code shown below was not shown directly in lecture, and it
-// differs slightly in some parts, as noted. Rationale for the changes:
-// I split the action of the original "_iop" function call into separate
-// functions, "_iop_of" and "_rightmost_of", as the original call required
-// part of the method to be performed in the argument list; in main.cpp, I
-// added a separate storage vector to avoid retaining references to temporary
-// objects, which some compilers may not support; and the node-swapping
-// function was redesigned to resolve some issues, which also required adding
-// a return value. These are subtle issues that aren't discussed directly in
-// lecture and they don't affect the underlying lessons.
-//   This is quite a tricky implementation since nearly all of the member
-// functions pass and return references to the actual pointers that make
-// up the tree structure. Therefore it edits the tree in-place with almost
-// every action, rather than passing copies of anything. Remember that we
-// can return references to data that is persisting in memory storage else-
-// where; in this case, the actual data that the tree organizes is being
-// stored somehow outside of the tree itself (see an example in main.cpp),
-// and the tree just records references to that external storage. We can also
-// return references to the tree's own data members that persist between
-// function calls, such as the actual pointers between nodes that it stores.
-// However, do remember that you must never return a reference to a temporary
-// stack variable that you create in some function; that memory would become
-// immediately invalid after the function call.
-//   There are pros and cons to implementing a tree this way. We can edit a
-// parent's connection to its child without storing pointers to parents or
-// trying to traverse upwards; instead, we assume that when pointers are
-// passed by reference, we are editing the same variable that the parent is
-// holding.
-//   The big challenge with using plain references is that they keep
-// referring to the same thing after being first initialized. If you need to
-// re-bind the reference to something else, it's easier to use pointers; you
-// can make pointers to pointers for layers of indirection, and explicitly
-// control how those addresses are stored and dereferenced. There is also an
-// advanced mechanism called std::reference_wrapper that you can use to
-// simulate storing references that may be re-bound, as many STL containers
-// would require.
-//   For the node data itself, instead of referencing external items, you
-// could instead just store value-based copies, which is very easy to write
-// but less memory-efficient. We have an example in the directory
-// "binary-tree-traversals". But there are many other advanced ways to do
-// that in C++ as well. There are some additional notes about the options for
-// the underlying data storage in main.cpp in the current directory.
+// Please check out the "binary-tree-traversals" and "bst" example
+// directories first for insight on how this works. The "bst" example
+// uses a very similar reference-storing design, and I've put additional
+// notes there about the design tradeoffs inherent in that.
 
 // ------
 
@@ -271,104 +233,6 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
 
 // -------
 
-// The implementations for the following functions were not shown in the
-// lecture directly. The _iop function has been revised a little bit as
-// "_iop_of", which finds the IOP of the argument you pass; it traverses one
-// step to the left before going to the right. This obtains the IOP of the
-// "cur" node when you call "_iop_of(cur)" explicitly, instead of requiring
-// a call to "_iop(cur->left)" as originally shown.
-
-// _iop_of: You pass in a pointer to a node, and it returns the pointer to
-// the in-order predecessor node, by reference. If the IOP does not exist,
-// it returns a reference to a node pointer that has value nullptr.
-template <typename K, typename D>
-typename AVL<K, D>::TreeNode*& AVL<K, D>::_iop_of(
-  TreeNode*& cur) const {
-
-  // We want to find the in-order predecessor of "cur",
-  // which is the right-most child of the left subtree of cur.
-
-  if (!cur) {
-    // If cur is nullptr, this is an error case.
-    // Just return cur by reference. (Since cur has the value of nullptr,
-    // we can check for that result.)
-    return cur;
-  }
-
-  if (!(cur->left)) {
-    // If cur has no left child, this is an error case.
-    // Just return cur->left by reference. (Since cur->left has the value of
-    // nullptr, we can check for that result.)
-    return cur->left;
-  }
-
-  // --- Wait: Let's review our strategy for what to do next. ---
-
-  // At this point, we're sure that cur is non-null and it has a left child.
-  // To search for the right-most child of the left subtree, we'll begin
-  // with the left child of cur, and then keep going right. However, here
-  // our plans are slightly complicated since we're directly returning a
-  // reference to a pointer in the tree. Let's briefly explain why. This
-  // will also shed more light on how _find works.
-
-  // We could use a simple while loop to go right repeatedly, but since we
-  // ultimately need to return a reference to an actual pointer in our tree,
-  // this complicates our use of a temporary pointer for looping. Remember
-  // that once you initialize a reference to something, you can't make it
-  // refer to something else instead. (You can use a non-const reference to
-  // edit the original data being referenced, but the reference variable
-  // itself will refer to the same thing for as long as the reference
-  // variable exists.)
-
-  // Here are some possible workarounds:
-  // 1. Use pointers to pointers instead of references to pointers.
-  //    (See the binary-tree-traversals folder for another example of this,
-  //     within the ValueBinaryTree class.)
-  // 2. Use std::reference_wrapper<> from the <functional> include, which
-  //    lets you simulate a reference type, but can be re-assigned to refer
-  //    to something else. This can also be a little confusing to use, as
-  //    you need to typecast the reference_wrapper to plain reference if you
-  //    want to access the actual value that is referred to. (If you choose
-  //    this solution, it would make sense to rewrite this entire class to
-  //    store reference_wrapper instead of plain references.)
-  // 3. Use recursion with a function that takes a reference as an argument
-  //    and returns a reference. This is how _find works. Since passing
-  //    arguments counts as initializing the argument variable, you can
-  //    simulate updating a reference with each recursive call.
-
-  // We'll go with option #3 again, recursion, so you can get more practice
-  // with that. See the binary-tree-traversals folder to learn about the
-  // pointers-to-pointers concept.
-
-  // ---------------------------------------------------------------
-
-  // Find the rightmost child pointer under the left subtree,
-  // and return it by reference.
-  return _rightmost_of(cur->left);
-}
-
-// _rightmost_of:
-// Find the right-most child of cur using recursion, and return that
-// node pointer, by reference.
-// If you call this function on a nullptr to begin with, it returns the same
-// pointer by reference.
-template <typename K, typename D>
-typename AVL<K, D>::TreeNode*& AVL<K, D>::_rightmost_of(
-  TreeNode*& cur) const {
-
-  // Base case 1: If cur is null, then just return it by reference.
-  // (Since cur has the value of nullptr, we can check for that result.)
-  if (!cur) return cur;
-
-  // Base case 2: So far, we know cur is not null. Now, if cur does not have
-  // a right child, then cur is the rightmost, so return cur by reference.
-  if (!(cur->right)) return cur;
-
-  // General case: The cur pointer is not null, and it does have a right
-  // child, so we should recurse to the right and return whatever we get.
-  return _rightmost_of(cur->right);
-}
-
 // _swap_nodes:
 // This will swap the logical positions of the nodes by changing the pointers
 // in the tree. You need to be careful, because this function will change the
@@ -403,6 +267,11 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_swap_nodes(
   // track of these original addresses.
   TreeNode* orig_node1 = node1;
   TreeNode* orig_node2 = node2;
+
+  // We need to swap the heights of the two nodes. For clarity, we'll just
+  // do this before changing the pointers. Since the heights are stored as
+  // plain values in the nodes, it's easy to swap them.
+  std::swap(node1->height, node2->height);
 
   // The first case below has been fully commented, and the following cases
   // are similar and symmetric, so comments have been omitted there.
@@ -552,7 +421,8 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     }
   }
 
-  // If anything rotated, we need to relabel this node's height.
+  // If nodes rotated underneath, their heights were updated.
+  // We need to update this node's height too.
   _updateHeight(cur);
 
   // Final error checking:
@@ -605,6 +475,8 @@ void AVL<K, D>::_rotateLeft(TreeNode*& cur) {
   cur = y;
 
   // Nodes x and y have changed heights, but z should not have changed height.
+  // When we update x and y, it's important to update x first, since it is
+  // now the lower of the two, and y's update will depend upon it.
   _updateHeight(x);
   _updateHeight(y);
 
@@ -702,21 +574,35 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopNode) {
   }
 
   if (iopNode->right != nullptr) {
-    // IoP not found, keep doing deeper:
+    // IoP not found yet. Keep doing deeper recursively:
     const D& d = _iopRemove(targetNode, iopNode->right);
+    // After the recursive call has been made, the target node has been
+    // removed successfully from the ultimate IOP position.
+    // Also, d now has a reference to the removed data.
+    // At this line, the "iopNode" pointer is not actually pointing to the
+    // IOP at all, but rather it points to the parent (or ancestor) of what
+    // had been the actual IOP. We'll call _ensureBalance on these as we
+    // return up the call stack, to make sure that any necessary balancing
+    // changes or height updates are propagated upwards in the trail of
+    // ancestry to the root.
     if (iopNode) {
       _ensureBalance(iopNode);
     }
     return d;
   }
   else {
+    // Base case:
+
     // Found IoP. Swap the location:
     TreeNode*& movedTarget = _swap_nodes(targetNode, iopNode);
-  }
 
+    // Remove the swapped node (at IoP's position) and return up the call
+    // stack. (What we return is actually a reference to the const data
+    // that was removed. This is clear from the return type of _remove.)
+    return _remove(movedTarget);
+  }
 
 }
 
-
-// Include the last a series of chained header files
+// Include the remaining headers in this series of chained header files
 #include "AVL-extra.hpp"
