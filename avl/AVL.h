@@ -75,12 +75,23 @@ class AVL {
     // _remove relies on the following functions. (The organization is a
     // little different from the bst directory example.)
 
-    // _iopRemove: targetNode is the node to remove, and iopNode is the
-    // in-order predecessor to be used in a swap (which must be found first).
-    // The single-argument version of _iopRemove calls the other version,
-    // just as a convenience wrapper to get things started.
+    // _iopRemove: targetNode is the node to remove, we'll want to find the
+    // in-order predecessor (IOP) and swap the target with it for removal.
+    // To recursively find the IOP, we traverse over the ancestors of the
+    // IOP until we find it. The single-argument version of _iopRemove calls
+    // the two-argument version on the earliest ancestor; this makes things
+    // more convenient and helps us avoid making a mistake in the logic.
     const D& _iopRemove(TreeNode*& targetNode);
-    const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode);
+    const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor);
+    
+    // _swap_nodes: This swaps the node positions (rewiring pointers as
+    // necessary) and also swaps the node heights. The intended usage is
+    // that node1 is higher (such as some internal node to remove) and node2
+    // is one of its descendants (especially the IOP). After calling this,
+    // the original node pointers that were passed to the function shouldn't
+    // be directly used again, because it's hard to tell what they point to
+    // afterward. Instead, the function returns a pointer, by reference,
+    // that is the updated node1 pointer.
     TreeNode*& _swap_nodes(TreeNode*& node1, TreeNode*& node2);
 
     // Update the height of the specified node, based on the existing
@@ -95,7 +106,7 @@ class AVL {
     // rebalance the subtree rooted here. It also records the updated height
     // in the node. These changes need to cascade upward, so after we call
     // this function, we need to make sure that it also gets called on those
-    // nodes on the path of ancestory up towards the root node.
+    // nodes on the path of ancestry up towards the root node.
     void _ensureBalance(TreeNode*& cur);
 
     // These functions perform the specified balancing rotation on the
@@ -134,7 +145,7 @@ class AVL {
         return 0;
       }
       else {
-        // Calculate the balannce factor safely and return it.
+        // Calculate the balance factor safely and return it.
         return get_height(node->right) - get_height(node->left);
       }
     }

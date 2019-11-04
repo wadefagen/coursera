@@ -112,6 +112,10 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_find(
 */
 template <typename K, typename D>
 void AVL<K, D>::insert(const K& key, const D& data) {
+
+  // TODO: This needs to do rebalancing.
+
+
   // Find the place where the item should go.
   TreeNode *& node = _find(key, head_);
   // For the sake of this example, let's disallow duplicates. If the node
@@ -220,7 +224,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
 
     // Note: The "node" pointer that we've now obtained here is the lower
     // node to the left. There is no need to call "ensure balance" or
-    // "update height" on this "node" now, because the height and balance
+    // "update height" on this pointer now, because the height and balance
     // of the subtree rooted at that node, which depend on what is beneath,
     // have not changed.
 
@@ -237,42 +241,14 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // Two-child remove
   else {
-    // When the node being deleted has two children, we have to be very
-    // careful. The lecture discusses this case in detail. (The versions
-    // of the helper functions being used here are slightly different
-    // compared to lecture, as noted in other comments here.)
+    // When the node being deleted has two children,
+    // we have to be very careful.
 
-    // Find the IOP (in-order predecessor) of the current node.
-    TreeNode*& iop = _iop_of(node);
-
-    // Old version:
-    // TreeNode*& iop = _iop( node->left );
-    // The lecture originally showed the call in this way, but the code has
-    // been revised so that the first step to the left happens inside the
-    // "_iop_of" function.
-
-    // Since this is the two-child remove case, we know that some in-order
-    // predecessor does exist, so the _iop_of lookup should not have failed.
-    if (!iop) {
-      throw std::runtime_error("error in two-child remove: IOP not found");
-    }
-
-    // Swap the node to remove and the IOP.
-    // (This function changes the pointers that are passed in-place so that
-    //  it can alter the tree structure itself, but afterwards you don't
-    //  know what the pointers point to exactly, depending on what happened.
-    //  Therefore you shouldn't reuse these pointers in the current function
-    //  after calling this. To make things easier, _swap_nodes will return
-    //  a pointer, by reference, that is the updated pointer in the tree
-    //  that is now pointing to the same node we gave as the first argument,
-    //  so we can do more work on that node afterwards.)
-    TreeNode*& moved_node = _swap_nodes(node, iop);
-
-    // Note that we do not use the original "node" and "iop" pointers by
-    // name after this point. Assume they are invalid now.
-
-    // Recurse to remove the original targeted node at its updated position.
-    return _remove(moved_node);
+    // This wrapper function will correctly remove the specified node
+    // after swapping it with its IOP. There is a lot of complexity here.
+    // See the other function implementations for comments. After this,
+    // it returns a reference to the data of the removed node.
+    return _iopRemove(node);
   }
 }
 
@@ -608,46 +584,74 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 
   // Make sure we also check the balance of the node that ends up in
   // targetNode's original position, on the way back up the call stack.
-  // The rest of the trail up to the root will be re-checked by whichever
-  // function called _iopRemove in the first place.
+  // The reasoning for this is explained in the base case of the other
+  // version of the _iopRemove function below. The rest of the nodes on
+  // the trail up to the root will be re-checked by whichever function
+  // called _iopRemove in the first place.
   _ensureBalance(targetNode);
 
   return d;
 }
 
 template <typename K, typename D>
-const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopNode) {
+const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
 
   if (!targetNode) {
-    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode): targetNode is null");
+    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor): targetNode is null");
   }
 
-  if (!iopNode) {
-    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopNode): iopNode is null");
+  if (!iopAncestor) {
+    throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor): iopAncestor is null");
   }
 
-  if (iopNode->right != nullptr) {
-    // IoP not found yet. Keep doing deeper recursively:
-    const D& d = _iopRemove(targetNode, iopNode->right);
+  if (iopAncestor->right != nullptr) {
+    // General case: IoP not found yet.
+    // Keep doing deeper recursively, eventually removing the target after
+    // a swap, and getting the data back:
+    const D& d = _iopRemove(targetNode, iopAncestor->right);
     // After the recursive call has been made, the target node has been
     // removed successfully from the ultimate IOP position.
     // Also, d now has a reference to the removed data.
-    // At this line, the "iopNode" pointer is not actually pointing to the
-    // IOP at all, but rather it points to the parent (or ancestor) of what
-    // had been the actual IOP. We'll call _ensureBalance on these as we
-    // return up the call stack, to make sure that any necessary balancing
-    // changes or height updates are propagated upwards in the trail of
-    // ancestry to the root.
-    if (iopNode) {
-      _ensureBalance(iopNode);
-    }
+    // The "iopAncestor" pointer is still pointing to one of the ancestors
+    // of the actual IOP node position, and on the way back up from the
+    // recursion process, we'll call _ensureBalance on these to make sure
+    // that any necessary balancing changes or height updates are propagated
+    // upwards in the trail of ancestry to the root.
+    _ensureBalance(iopAncestor);
     return d;
   }
   else {
-    // Base case:
+    // Base case: Here, iopAncestor points to the actual IOP.
 
-    // Found IoP. Swap the location:
-    TreeNode*& movedTarget = _swap_nodes(targetNode, iopNode);
+    // Found IoP. Swap the nodes by location, altering pointers:
+    TreeNode*& movedTarget = _swap_nodes(targetNode, iopAncestor);
+
+    // Let's think carefully about what just happened.
+    // If the target node was not the direct parent of the IOP, then the
+    // swap was fairly simple, and now the pointer "targetNode" is actually
+    // pointing to the node that used to be the IOP, which is now raised
+    // to the higher position. So we'll want to make sure that the other
+    // _iopRemove wrapper function calls _ensureBalance on "targetNode"
+    // after we get out of the recursive call stack there. We can't do it
+    // right now, because first we want to make sure _ensureBalance gets
+    // called on the other nodes in the lineage on the way back up.
+    // The current function takes care of that as it returns through the
+    // other conditional branch (the general case).
+
+    // If the target node was the direct parent of the IOP, then this is
+    // still true. "targetNode" is now pointing to the raised node.
+    // The only complication is that the "iopAncestor" pointer is now
+    // pointing to something we aren't sure of, but we won't refer to it
+    // again here, so it doesn't matter. That's why we got back the
+    // "movedTarget" pointer from _swap_nodes instead, so we always know
+    // the correct pointer to remove from the lower position.
+
+    // Since the moved target is now in the lower position that was the
+    // IOP, we know that removing it from that position will either be a
+    // zero-child remove or a one-child remove now. It can't be another
+    // two-child remove because then we must not have found the IOP yet.
+    // Since it's not going to be another two-child remove, we don't need
+    // to worry about _iopRemove being called yet again here.
 
     // Remove the swapped node (at IoP's position) and return up the call
     // stack. (What we return is actually a reference to the const data
