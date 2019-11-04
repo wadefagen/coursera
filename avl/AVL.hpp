@@ -147,20 +147,26 @@ const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
     throw std::runtime_error("error: remove() used on non-existent key");
   }
   else if (key == cur->key) {
-    // Found it: REMOVE HERE
+    // Found the node to remove; remove it recursively and return the data.
+    // There's no need to "ensure balance" of the node being removed,
+    // but as soon as this call returns, notice that _ensureBalance gets
+    // called on the ancestors by the other conditional branches in this
+    // function.
     return _remove(cur);
   }
   else if (key < cur->key) {
     // Search left
     const D& d = _find_and_remove(key, cur->left);
-    // Ensure balance of this ancestor on the way back up the call stack:
+    // Ensure balance and update height of this ancestor
+    // on the way back up the call stack:
     _ensureBalance(cur);
     return d;
   }
   else {
     // Search right
     const D& d = _find_and_remove(key, cur->right);
-    // Ensure balance of this ancestor on the way back up the call stack:
+    // Ensure balance and update height of this ancestor
+    // on the way back up the call stack:
     _ensureBalance(cur);
     return d;
   }
@@ -179,7 +185,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   // a const reference to some data removed, and there is none. In practice
   // you would want to add more features to your class for handling these
   // situations efficiently in a way that makes sense for your users.
-  if (!node) { throw std::runtime_error("error: _remove() used on non-existent key"); }
+  if (!node) { throw std::runtime_error("error: _remove() used on nullptr"); }
 
   // When you are studying the cases below, remember: Right now, "node" is
   // the actual pointer that this node's parent holds, which points to this
@@ -211,6 +217,13 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
     TreeNode* temp = node;
     node = node->left;
     delete temp;
+
+    // Note: The "node" pointer that we've now obtained here is the lower
+    // node to the left. There is no need to call "ensure balance" or
+    // "update height" on this "node" now, because the height and balance
+    // of the subtree rooted at that node, which depend on what is beneath,
+    // have not changed.
+
     return data;
   }
   // One-child (right) remove
@@ -644,5 +657,5 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopNode) {
 
 }
 
-// Include the remaining headers in this series of chained header files
+// Include the remaining headers in this series of related header files
 #include "AVL-extra.hpp"

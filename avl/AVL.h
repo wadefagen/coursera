@@ -92,9 +92,10 @@ class AVL {
 
     // Ensure that the balance factor of specified node has magnitude
     // no greater than 1. This calls rotation functions as necessary to
-    // rebalance the subtree rooted here. As a result, we should also
-    // subsequently call this function on those nodes up the path of
-    // ancestory towards the root node.
+    // rebalance the subtree rooted here. It also records the updated height
+    // in the node. These changes need to cascade upward, so after we call
+    // this function, we need to make sure that it also gets called on those
+    // nodes on the path of ancestory up towards the root node.
     void _ensureBalance(TreeNode*& cur);
 
     // These functions perform the specified balancing rotation on the
