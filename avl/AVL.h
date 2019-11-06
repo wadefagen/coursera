@@ -69,8 +69,27 @@ class AVL {
     // These internal helper functions are private because they are only
     // meant to be used by other member functions of our class. Please see
     // the comments in AVL.hpp for details about them.
+
+    // The naming convention may be a little bit confusing.
+    // Here is an overview of how these functions call each other
+    // sequentially when the public functions are used:
+    // find -> _find
+    // insert -> _find_and_insert
+    // remove -> _find_and_remove -> _remove -> _iopRemove
+
+    // Find the node with this key and return its data.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
+    
+    // Actually remove the node that this pointer points to.
+    // (This may need to invoke _iopRemove in some cases.)
     const D& _remove(TreeNode*& node);
+
+    // This is called by "insert" to recursively find the insertion point,
+    // insert, and rebalance as it returns.
+    void _find_and_insert(const K& key, const D& data, TreeNode*& cur);
+    // This is called by "remove" to recursively remove the correct node
+    // and rebalance as it returns.
+    const D& _find_and_remove(const K& key, TreeNode*& cur);
     
     // _remove relies on the following functions. (The organization is a
     // little different from the bst directory example.)
@@ -126,7 +145,7 @@ class AVL {
     // (This function was just shown as "height(...)" in some of the lecture
     //  videos. It's been renamed here to clarify that it's different from
     //  the node's height member variable.)
-    int get_height(const TreeNode*& node) const {
+    int get_height(TreeNode*& node) const {
       if (!node) {
         // A non-existent node has a height of 1
         return -1;
@@ -139,7 +158,7 @@ class AVL {
 
     // get_balance_factor: A helper function for safely calculating the balance
     // factor of the node that is passed as the argument.
-    int get_balance_factor(const TreeNode*& node) const {
+    int get_balance_factor(TreeNode*& node) const {
       if (!node) {
         // A non-existent node has a balance factor of 0
         return 0;

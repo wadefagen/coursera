@@ -113,17 +113,55 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_find(
 template <typename K, typename D>
 void AVL<K, D>::insert(const K& key, const D& data) {
 
-  // TODO: This needs to do rebalancing.
+  // Begin the recursion process with this function that will find the place
+  // to insert the new node, insert it, and then rebalance the tree as needed
+  // while it returns.
+  _find_and_insert(key, data, head_);
+  return;
 
+}
 
-  // Find the place where the item should go.
-  TreeNode *& node = _find(key, head_);
-  // For the sake of this example, let's disallow duplicates. If the node
-  // found isn't a nullptr, then the key already exists, so report an error.
-  // (We could also do something nicer than this, like remove the old key and
-  // then insert the new item to replace it.)
-  if (node) { throw std::runtime_error("error: insert() used on an existing key"); }
-  node = new TreeNode(key, data);
+template <typename K, typename D>
+void AVL<K, D>::_find_and_insert(const K& key, const D& data, TreeNode*& cur) {
+
+  // We let the "insert" function make the initial call to this one.
+  // The basic logic here is similar to _find, but now we want to take
+  // advantage of the call stack to ensure balance of everything from
+  // the insertion point up to the root, after we do the insertion.
+
+  if (cur == nullptr) {
+    // In this case we've found the empty child position where we should
+    // insert the item.
+    cur = new TreeNode(key, data);
+    // Note that we always insert the new node as a leaf, so it is already
+    // balanced. It has height 0 by default (because of the node class
+    // constructor), and it has no children, so there's no need to call
+    // the "ensure balance" function on it. We just return up the call
+    // stack now.
+    return;
+  }
+  else if (key == cur->key) {
+    // If we found a match for the key, then the key already exists,
+    // so report an error. (For the sake of this example, let's disallow
+    // duplicates. We could also do something nicer than this, like remove
+    // the old key and then insert the new item to replace it.)
+    throw std::runtime_error("error: insert() used on an existing key");
+  }
+  else if (key < cur->key) {
+    // Search left and insert
+    _find_and_insert(key, data, cur->left);
+    // On the way back up, ensure the balance of this node
+    _ensureBalance(cur);
+    return;
+  }
+  else {
+    // Search right and insert
+    _find_and_insert(key, data, cur->right);
+    // On the way back up, ensure the balance of this node
+    _ensureBalance(cur);
+    return;
+  }
+
 }
 
 /**
@@ -133,7 +171,9 @@ void AVL<K, D>::insert(const K& key, const D& data) {
 template <typename K, typename D>
 const D& AVL<K, D>::remove(const K& key) {
 
-  // new wrapper between "remove" and "_remove":
+  // Begin the recursion process with this function that will find the
+  // node to remove, remove it, and then rebalance the tree as needed
+  // while it returns.
   return _find_and_remove(key, head_);
 
 }
@@ -159,7 +199,7 @@ const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
     return _remove(cur);
   }
   else if (key < cur->key) {
-    // Search left
+    // Search left and remove
     const D& d = _find_and_remove(key, cur->left);
     // Ensure balance and update height of this ancestor
     // on the way back up the call stack:
@@ -167,7 +207,7 @@ const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
     return d;
   }
   else {
-    // Search right
+    // Search right and remove
     const D& d = _find_and_remove(key, cur->right);
     // Ensure balance and update height of this ancestor
     // on the way back up the call stack:
@@ -411,7 +451,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 
   if (initial_balance == -2) {
     const int l_balance = get_balance_factor(cur->left);
-    if (l_balance == -1) {
+    if (l_balance == -1 || l_balance == 0) {
       _rotateRight(cur);
     }
     else if (l_balance == 1) {
@@ -427,7 +467,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
   }
   else if (initial_balance == 2) {
     const int r_balance = get_balance_factor(cur->right);
-    if (r_balance == 1) {
+    if (r_balance == 1 || r_balance == 0) {
       _rotateLeft(cur);
     }
     else if (r_balance == -1) {
