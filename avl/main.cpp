@@ -124,8 +124,11 @@ int main() {
       std::cerr << "going to insert " << i << std::endl;
       t.insert(int_storage[i], string_storage[i]);
     }
-
+    
     std::cerr << "\nOK\n";
+    
+    t.printVertical();
+
 
     // End of the block:
     // The AVL tree object will be destroyed now when it goes out of scope.

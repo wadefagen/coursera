@@ -451,10 +451,10 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 
   if (initial_balance == -2) {
     const int l_balance = get_balance_factor(cur->left);
-    if (l_balance == -1 || l_balance == 0) {
+    if (l_balance == -1 ) {
       _rotateRight(cur);
     }
-    else if (l_balance == 1) {
+    else if (l_balance == 1 || l_balance == 0) {
       _rotateLeftRight(cur);
     }
     else {
@@ -467,10 +467,10 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
   }
   else if (initial_balance == 2) {
     const int r_balance = get_balance_factor(cur->right);
-    if (r_balance == 1 || r_balance == 0) {
+    if (r_balance == 1) {
       _rotateLeft(cur);
     }
-    else if (r_balance == -1) {
+    else if (r_balance == -1 || r_balance == 0) {
       _rotateRightLeft(cur);
     }
     else {
