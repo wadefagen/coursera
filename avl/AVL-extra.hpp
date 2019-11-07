@@ -52,7 +52,9 @@ void AVL<K, D>::printVertical() const {
         margin_stack.push(margin_level+1);
       }
 
-      std::cout << "[" << n->key << ": " << n->data << "]" << std::endl;
+      std::cout << "[" << n->key << ": " << n->data << "] ";
+      std::cout << "Bal: " << get_balance_factor(n) << " ";
+      std::cout << "Ht: " << get_height(n) << std::endl;
     }
     else {
       std::cout << "[]" << std::endl;

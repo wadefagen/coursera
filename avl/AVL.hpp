@@ -238,6 +238,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
 
   // Zero child remove:
   if (node->left == nullptr && node->right == nullptr) {
+    std::cerr << "0-child rem" << std::endl;
     // Peek at the data referred to by the node so we can return a reference
     // to the data later, after the tree node itself is already gone.
     const D& data = node->data;
@@ -253,6 +254,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // One-child (left) remove
   else if (node->left != nullptr && node->right == nullptr) {
+    std::cerr << "1-child left rem" << std::endl;
     // Similar to the previous case, except that we need to remap the "node"
     // pointer to point to the node's child, so that the parent of the node
     // being deleted will retain its connection to the rest of the tree
@@ -272,6 +274,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // One-child (right) remove
   else if (node->left == nullptr && node->right != nullptr) {
+    std::cerr << "1-child right rem" << std::endl;
     // This case is symmetric to the previous case.
     const D& data = node->data;
     TreeNode* temp = node;
@@ -281,6 +284,7 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // Two-child remove
   else {
+    std::cerr << "2-child rem" << std::endl;
     // When the node being deleted has two children,
     // we have to be very careful.
 
@@ -332,7 +336,13 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_swap_nodes(
   // We need to swap the heights of the two nodes. For clarity, we'll just
   // do this before changing the pointers. Since the heights are stored as
   // plain values in the nodes, it's easy to swap them.
+  std::cerr << "before:" << std::endl;
+  std::cerr << "node1: " << node1->key << " n1h: " << node1->height
+    << " node2: " << node2->key << " n2h: " << node2->height << std::endl;
   std::swap(node1->height, node2->height);
+  std::cerr << "after:" << std::endl;
+  std::cerr << "node1: " << node1->key << " n1h: " << node1->height
+    << " node2: " << node2->key << " n2h: " << node2->height << std::endl;
 
   // The first case below has been fully commented, and the following cases
   // are similar and symmetric, so comments have been omitted there.
@@ -442,6 +452,9 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     std::string msg("ERROR: Detected invalid initial balance factor: ");
     msg += std::to_string(initial_balance);
     msg += " ; This should never happen here.";
+    std::cerr << "key: " << cur->key << " data: " << cur->data << std::endl;
+    std::cerr << "nl: " << cur->left->key << " nr: " << cur->right->key << std::endl;
+    std::cerr << "hl: " << get_height(cur->left) << " hr: " << get_height(cur->right) << std::endl;
     throw std::runtime_error(msg);
   }
 
@@ -451,10 +464,10 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 
   if (initial_balance == -2) {
     const int l_balance = get_balance_factor(cur->left);
-    if (l_balance == -1 ) {
+    if (l_balance == -1 || l_balance == 0) {
       _rotateRight(cur);
     }
-    else if (l_balance == 1 || l_balance == 0) {
+    else if (l_balance == 1) {
       _rotateLeftRight(cur);
     }
     else {
@@ -467,10 +480,10 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
   }
   else if (initial_balance == 2) {
     const int r_balance = get_balance_factor(cur->right);
-    if (r_balance == 1) {
+    if (r_balance == 1 || r_balance == 0) {
       _rotateLeft(cur);
     }
-    else if (r_balance == -1 || r_balance == 0) {
+    else if (r_balance == -1) {
       _rotateRightLeft(cur);
     }
     else {
@@ -664,6 +677,19 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
     // Base case: Here, iopAncestor points to the actual IOP.
 
     // Found IoP. Swap the nodes by location, altering pointers:
+
+    // We need a backup copy of the address of the immediate ancestor so
+    // that we can be sure to fix its height after the swap. (After swapping,
+    // the iopAncestor pointer itself will be pointing to something unclear.)
+    TreeNode* iopAncestorBackup = iopAncestor;
+
+    std::cerr << "iopAncestorBackup: " << iopAncestorBackup->key << std::endl;
+    std::cerr << "h: " << get_height(iopAncestorBackup) << std::endl;
+    std::cerr << "lh: " << get_height(iopAncestorBackup->left) << std::endl;
+    std::cerr << "rh: " << get_height(iopAncestorBackup->right) << std::endl;
+
+    // After swapping positions, we get back a reference to the updated
+    // pointer to the targeted node.
     TreeNode*& movedTarget = _swap_nodes(targetNode, iopAncestor);
 
     // Let's think carefully about what just happened.
@@ -696,7 +722,12 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
     // Remove the swapped node (at IoP's position) and return up the call
     // stack. (What we return is actually a reference to the const data
     // that was removed. This is clear from the return type of _remove.)
-    return _remove(movedTarget);
+    const D& d = _remove(movedTarget);
+    std::cerr << "iopAncestorBackup: " << iopAncestorBackup->key << std::endl;
+    std::cerr << "h: " << get_height(iopAncestorBackup) << std::endl;
+    std::cerr << "lh: " << get_height(iopAncestorBackup->left) << std::endl;
+    std::cerr << "rh: " << get_height(iopAncestorBackup->right) << std::endl;
+    return d;
   }
 
 }
