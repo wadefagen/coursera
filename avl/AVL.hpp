@@ -641,6 +641,9 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
   // version of the _iopRemove function below. The rest of the nodes on
   // the trail up to the root will be re-checked by whichever function
   // called _iopRemove in the first place.
+  if (targetNode->left) {
+    _ensureBalance(targetNode->left);
+  }
   _ensureBalance(targetNode);
 
   return d;
