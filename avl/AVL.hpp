@@ -633,12 +633,15 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
   // although we ultimately want to find the right-most child of that.
   const D& d = _iopRemove(targetNode, targetNode->left);
 
-  // Make sure we also check the balance of the node that ends up in
-  // targetNode's original position, on the way back up the call stack.
-  // The reasoning for this is explained in the base case of the other
-  // version of the _iopRemove function below. The rest of the nodes on
-  // the trail up to the root will be re-checked by whichever function
-  // called _iopRemove in the first place.
+  // A lot of things happened during the recursive call that we just made.
+  // There are two nodes that still need to get their balance checked here:
+  // First, we need to check the balance of the first node to the left, if
+  // any node still exists in that position. This is because the base case
+  // in the other version of _iopRemove doesn't check it there. After that,
+  // we also check the balance of "targetNode", which is now the node that
+  // ended up in targetNode's original upper position. The rest of the nodes
+  // above this, that are on the trail up to the root, must be re-checked by
+  // whichever function had called _iopRemove in the first place.
   if (targetNode->left) {
     _ensureBalance(targetNode->left);
   }
