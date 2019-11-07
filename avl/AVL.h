@@ -213,12 +213,7 @@ class AVL {
       while (head_) {
         // As long as the head pointer isn't null, we can just look at
         // what the key is and call remove based on that.
-        std::cerr << "Removing " << head_->key << std::endl;
-        std::cerr << "Before:" << std::endl;
-        printVertical();
         remove(head_->key);
-        std::cerr << "After:" << std::endl;
-        printVertical();
       }
     }
 

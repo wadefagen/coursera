@@ -120,14 +120,14 @@ int main() {
     // Insert a lot of items to test the tree.
 
     for (int i=60; i<=89; i++) {
-      t.printVertical();
-      std::cerr << "going to insert " << i << std::endl;
+      // t.printVertical();
+      // std::cerr << "going to insert " << i << std::endl;
       t.insert(int_storage[i], string_storage[i]);
     }
     
     std::cerr << "\nOK\n";
     
-    t.printVertical();
+    // t.printVertical();
 
 
     // End of the block:
