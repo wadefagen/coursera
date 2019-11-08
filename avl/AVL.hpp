@@ -674,7 +674,20 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
     // recursion process, we'll call _ensureBalance on these to make sure
     // that any necessary balancing changes or height updates are propagated
     // upwards in the trail of ancestry to the root.
-    _ensureBalance(iopAncestor);
+
+    // The version originally shown on the lecture slides had checked for
+    // nullptr here. In this version, we shouldn't really have to, since
+    // _ensureBalance now does this also, but also because if it had been
+    // a swap between the targetNode and the IOP here that caused the
+    // ancestor to no longer exist, then we would be in the base case branch
+    // of this function now, not here. In any case, it's okay to have a
+    // slightly redundant safety check, with almost no performance cost at
+    // all. We don't want to manually over-optimize this logic and possibly
+    // make a mistake.
+    if (iopAncestor) {
+      _ensureBalance(iopAncestor);
+    }
+    
     return d;
   }
   else {
