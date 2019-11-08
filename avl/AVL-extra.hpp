@@ -63,3 +63,87 @@ void AVL<K, D>::printVertical() const {
   }
 
 }
+
+// These debugging checks do redundant checking just to make sure the
+// program doesn't have a mistake that would be hard to catch otherwise.
+// In practice this kind of check could be disabled after the library
+// was fully tested.
+
+template <typename K, typename D>
+bool AVL<K, D>::runDebuggingChecks() {
+  if (!_debugHeightCheck(head_)) throw std::runtime_error("ERROR: _debugHeightCheck failed");
+  if (!_debugBalanceCheck(head_)) throw std::runtime_error("ERROR: _debugBalanceCheck failed");
+  if (!_debugOrderCheck(head_)) throw std::runtime_error("ERROR: _debugOrderCheck failed");
+  return true;
+}
+
+template <typename K, typename D>
+bool AVL<K, D>::_debugHeightCheck(TreeNode* cur) {
+
+  // a non-existent node implicitly has the correct height
+  if (!cur) return true;
+
+  // everything OK left?
+  if (!_debugHeightCheck(cur->left)) return false;
+
+  // everything OK right?
+  if (!_debugHeightCheck(cur->right)) return false;
+
+  // everything OK here?
+  int height_here = get_height(cur);
+  int height_left = get_height(cur->left);
+  int height_right = get_height(cur->right);
+  int max_child_height = std::max(height_left, height_right);
+  return 1 == height_here - max_child_height;
+
+}
+
+template <typename K, typename D>
+bool AVL<K, D>::_debugBalanceCheck(TreeNode* cur) {
+
+  // balanced non-existence
+  if (!cur) return true;
+
+  // everything OK left?
+  if (!_debugBalanceCheck(cur->left)) return false;
+
+  // everything OK right?
+  if (!_debugBalanceCheck(cur->right)) return false;
+
+  // everything OK here?
+  int bal = get_height(cur->right) - get_height(cur->left);
+  return (bal >= -1 && bal <= 1);
+
+}
+
+template <typename K, typename D>
+bool AVL<K, D>::_debugOrderCheck(TreeNode* cur) {
+
+  if (!cur) return true;
+
+  // This assumes the current implementation does not allow two nodes
+  // to have the same key, so we enforce "<" ordering, not "<=" ordering.
+
+  if (cur->left) {
+    if (cur->left->key >= cur->key) {
+      std::cerr << "ERROR, we found that:" << std::endl;
+      std::cerr << "cur->left->key >= cur->key" << std::endl;
+      std::cerr << "cur->left->key : " << cur->left->key << std::endl;
+      std::cerr << "cur->key : " << cur->key << std::endl;
+      return false;
+    }
+  }
+
+  if (cur->right) {
+    if (cur->right->key <= cur->key) {
+      std::cerr << "ERROR, we found that:" << std::endl;
+      std::cerr << "cur->right->key <= cur->key" << std::endl;
+      std::cerr << "cur->right->key : " << cur->right->key << std::endl;
+      std::cerr << "cur->key : " << cur->key << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
+

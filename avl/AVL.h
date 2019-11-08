@@ -204,10 +204,6 @@ class AVL {
       _printInOrder(head_);
     }
 
-    // Prints the tree vertically without any fancy formatting in the margin.
-    // For debugging purposes.
-    void printVertical() const;
-
     // clear_tree: Remove the head item until the tree is empty.
     void clear_tree() {
       while (head_) {
@@ -225,6 +221,17 @@ class AVL {
     ~AVL() {
       clear_tree();
     }
+
+
+    // Prints the tree vertically without any fancy formatting in the margin.
+    // For debugging purposes.
+    void printVertical() const;
+
+    // More debugging functions to help check the AVL tree properties (slow)
+    bool runDebuggingChecks();
+    bool _debugHeightCheck(TreeNode* cur);
+    bool _debugBalanceCheck(TreeNode* cur);
+    bool _debugOrderCheck(TreeNode* cur);
 
 };
 

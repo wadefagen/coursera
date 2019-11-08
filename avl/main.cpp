@@ -16,8 +16,8 @@ int main() {
   // Please see the comments in the bst example project about why we are
   // declaring these variables here in the main() function scope.
 
-  // Initialize a vector 100 elements long, filled with 0 values
-  const int V_SIZE = 100;
+  // Initialize a vector V_SIZE elements long, filled with 0 values
+  const int V_SIZE = 1000;
   std::vector<int> int_storage(V_SIZE, 0);
   // Reassign each item to hold a value matching its index
   for (int i=0; i<V_SIZE; i++) {
@@ -101,31 +101,42 @@ int main() {
     // catch the exception, then the program would just crash to the terminal
     // and display the exception error message there.)
     try {
+      std::cout << std::endl;
       std::cout << "Attempting to find a non-existent item, 51: " << std::endl;
-      std::cout << "t.find(51): " << t.find(51) << std::endl;
+      std::cout << "t.find(51): " << t.find(51);
+      std::cout << std::endl;
     }
     catch (const std::runtime_error& e) {
-      std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
+      std::cout << "(OK) Caught example exception with message: " << e.what() << std::endl;
     }
 
     // Another example
     try {
+      std::cout << std::endl;
       std::cout << "Attempting to remove a non-existent item, 99: " << std::endl;
-      std::cout << "t.remove(99): " << t.remove(99) << std::endl;
+      std::cout << "t.remove(99): " << t.remove(99);
+      std::cout << std::endl;
     }
     catch (const std::runtime_error& e) {
-      std::cout << "\nCaught exception with error message: " << e.what() << std::endl;
+      std::cout << "(OK) Caught example exception with message: " << e.what() << std::endl;
     }
 
     // Insert a lot of items to test the tree.
-
-    for (int i=60; i<=89; i++) {
+    for (int i=60; i<=899; i++) {
       // t.printVertical();
       // std::cerr << "going to insert " << i << std::endl;
       t.insert(int_storage[i], string_storage[i]);
     }
+    std::cerr << "\nInsert test OK\n";
+
+    // Remove a lot of items to test the tree.
+    for (int i=60; i<=899; i+=3) {
+      // t.printVertical();
+      t.remove(i);
+    }
+    std::cerr << "\nRemove test OK\n";
+
     
-    std::cerr << "\nOK\n";
     
     // t.printVertical();
 

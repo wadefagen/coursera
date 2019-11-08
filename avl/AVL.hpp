@@ -42,7 +42,7 @@ const D& AVL<K, D>::find(const K& key) {
   //   through return-by-reference.
   // If not found, then the node returned has a value of nullptr.
   TreeNode*& node = _find(key, head_);
-  if (node == nullptr) { throw std::runtime_error("error: key not found"); }
+  if (node == nullptr) { throw std::runtime_error("error in find(): key not found"); }
   // We found the node, so return the actual data there, by reference.
   return node->data;
 }
@@ -117,7 +117,10 @@ void AVL<K, D>::insert(const K& key, const D& data) {
   // to insert the new node, insert it, and then rebalance the tree as needed
   // while it returns.
   _find_and_insert(key, data, head_);
-  return;
+  
+  // Run some optional brute-force debugging checks.
+  // This could be removed for better efficiency.
+  runDebuggingChecks();
 
 }
 
@@ -145,7 +148,7 @@ void AVL<K, D>::_find_and_insert(const K& key, const D& data, TreeNode*& cur) {
     // so report an error. (For the sake of this example, let's disallow
     // duplicates. We could also do something nicer than this, like remove
     // the old key and then insert the new item to replace it.)
-    throw std::runtime_error("error: insert() used on an existing key");
+    throw std::runtime_error("error in insert(): key already exists");
   }
   else if (key < cur->key) {
     // Search left and insert
@@ -174,8 +177,13 @@ const D& AVL<K, D>::remove(const K& key) {
   // Begin the recursion process with this function that will find the
   // node to remove, remove it, and then rebalance the tree as needed
   // while it returns.
-  return _find_and_remove(key, head_);
-
+  const D& d = _find_and_remove(key, head_);
+  
+  // Run some optional brute-force debugging checks.
+  // This could be removed for better efficiency.
+  runDebuggingChecks();
+  
+  return d;
 }
 
 template <typename K, typename D>
@@ -188,7 +196,7 @@ const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
 
   if (cur == nullptr) {
     // Key not found
-    throw std::runtime_error("error: remove() used on non-existent key");
+    throw std::runtime_error("error in remove(): key not found");
   }
   else if (key == cur->key) {
     // Found the node to remove; remove it recursively and return the data.
