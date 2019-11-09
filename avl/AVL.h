@@ -104,10 +104,16 @@ class AVL {
     // in-order predecessor (IOP) and swap the target with it for removal.
     // To recursively find the IOP, we traverse over the ancestors of the
     // IOP until we find it. The single-argument version of _iopRemove calls
-    // the two-argument version on the earliest ancestor; this makes things
-    // more convenient and helps us avoid making a mistake in the logic.
+    // the other version of _iopRemove on the first node to the left, which
+    // is the the earliest ancestor; this makes things more convenient and
+    // helps us avoid making a mistake in the logic.
     const D& _iopRemove(TreeNode*& targetNode);
-    const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor);
+    // The iopAncestor argument tracks the nodes being traversed on the way
+    // down as we search for the IOP that can be swapped with the target.
+    // When the single-parameter version of _iopRemove calls this other
+    // version, it needs to pass "true" for the isInitialCall argument.
+    // We check that in the implementation to catch a certain edge case.
+    const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bool isInitialCall);
 
     // _swap_nodes: This swaps the node positions (rewiring pointers as
     // necessary) and also swaps the node heights. The intended usage is

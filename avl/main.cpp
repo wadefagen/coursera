@@ -16,9 +16,16 @@ int main() {
   // Please see the comments in the bst example project about why we are
   // declaring these variables here in the main() function scope.
 
-  // Initialize a vector V_SIZE elements long, filled with 0 values
+  // We'll allocate this many items contiguously in memory externally to the
+  // AVL tree, which the tree will be able to reference in its nodes.
   // (Please set to at least 1000 so the test cases won't have issues.)
   const int V_SIZE = 1000;
+
+  if (V_SIZE < 1000) {
+    throw std::runtime_error("Please set V_SIZE to at least 1000");
+  }
+
+  // Initialize a vector V_SIZE elements long, filled with 0 values
   std::vector<int> int_storage(V_SIZE, 0);
   // Reassign each item to hold a value matching its index
   for (int i=0; i<V_SIZE; i++) {
@@ -131,6 +138,11 @@ int main() {
         << "\"" << e.what() << "\"" << std::endl;
     }
 
+    // --- Begin extended tests ---
+
+    std::cout << "\n --- Beginning extended tests ---\n"
+      << "  (Many items will be inserted and removed silently...)" << std::endl;
+
     // Clear the tree contents (remove all nodes)
     t.clear_tree();
 
@@ -170,7 +182,9 @@ int main() {
         t.remove(j);
       }
     }
-    std::cout << "\nAdditional tests OK\n";
+    std::cout << "\n --- End of extended tests ---" << std::endl;
+    
+    // --- End of extended tests ---
 
     // End of the block:
     // The AVL tree object will be destroyed now when it goes out of scope.

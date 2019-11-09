@@ -117,6 +117,9 @@ bool AVL<K, D>::_debugHeightCheck(TreeNode* cur) {
   int height_here = _get_height(cur);
   int height_left = _get_height(cur->left);
   int height_right = _get_height(cur->right);
+  // std::cerr << "here: " << height_here << std::endl;
+  // std::cerr << "left: " << height_left << std::endl;
+  // std::cerr << "right: " << height_right << std::endl;
   int max_child_height = std::max(height_left, height_right);
   return 1 == height_here - max_child_height;
 

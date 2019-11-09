@@ -291,6 +291,9 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
     TreeNode* temp = node;
     node = node->left;
     delete temp;
+    // "temp" is a temporary local variable here, but as a good habit, let's
+    // set it to nullptr anyway rather than trying to over-optimize.
+    temp = nullptr;
 
     // Note: The "node" pointer that we've now obtained here is the lower
     // node to the left. There is no need to call "ensure balance" or
@@ -309,6 +312,8 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
     TreeNode* temp = node;
     node = node->right;
     delete temp;
+    temp = nullptr;
+
     return data;
   }
   // Two-child remove
@@ -657,7 +662,9 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 
   // Kick-start the IOP-finding process with the left child of the target,
   // although we ultimately want to find the right-most child of that.
-  const D& d = _iopRemove(targetNode, targetNode->left);
+  // The last argument "true" signals that it is the initial call we are
+  // making to that version of the recursive function on the way down.
+  const D& d = _iopRemove(targetNode, targetNode->left, true);
 
   // A lot of things happened during the recursive call that we just made.
   // There are two nodes that still need to get their balance checked here:
@@ -677,7 +684,7 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 }
 
 template <typename K, typename D>
-const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
+const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bool isInitialCall) {
 
   if (!targetNode) {
     throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor): targetNode is null");
@@ -690,28 +697,51 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor) {
   if (iopAncestor->right != nullptr) {
     // General case: IoP not found yet.
     // Keep doing deeper recursively, eventually removing the target after
-    // a swap, and getting the data back:
-    const D& d = _iopRemove(targetNode, iopAncestor->right);
+    // a swap, and getting the data back. We have to pass "false" for the
+    // next "isInitialCall" argument now.
+    const D& d = _iopRemove(targetNode, iopAncestor->right, false);
+    
     // After the recursive call has been made, the target node has been
     // removed successfully from the ultimate IOP position.
     // Also, d now has a reference to the removed data.
-    // The "iopAncestor" pointer is still pointing to one of the ancestors
-    // of the actual IOP node position, and on the way back up from the
-    // recursion process, we'll call _ensureBalance on these to make sure
-    // that any necessary balancing changes or height updates are propagated
-    // upwards in the trail of ancestry to the root.
+    
+    // In many cases, the "iopAncestor" pointer is now still pointing to
+    // one of the ancestors of the actual IOP node position. That is
+    // convenient to us here, because on the way back up from the recursion
+    // process, we'll call _ensureBalance on these to make sure that any
+    // necessary balancing changes or height updates are propagated upwards
+    // in the trail of ancestry to the root. However, if the current node
+    // was the first node to the left at the beginning of the process, then
+    // its immediate parent was just involved in a swap with the IOP! This
+    // is a problem for us here because we no longer have a safe way to
+    // directly change the pointer that points to this node. To get around
+    // this problem, we've passed an argument that tells whether it's the
+    // initial call to this version of _iopRemove or not, on the way down.
+    // If it is the initial call, then this was the first node to the left,
+    // so we can't call _ensureBalance on the "iopAncestor" pointer here:
+    // that pointer is no longer valid! Instead, we'll skip that here, and
+    // the outer _iopRemove wrapper function will do the job of ensuring the
+    // balance of its left child at the end.
 
-    // The version originally shown on the lecture slides had checked for
-    // nullptr here. In this version, we shouldn't really have to, since
-    // _ensureBalance now does this also, but also because if it had been
-    // a swap between the targetNode and the IOP here that caused the
-    // ancestor to no longer exist, then we would be in the base case branch
-    // of this function now, not here. In any case, it's okay to have a
-    // slightly redundant safety check, with almost no performance cost at
-    // all. We don't want to manually over-optimize this logic and possibly
-    // make a mistake.
-    if (iopAncestor) {
-      _ensureBalance(iopAncestor);
+    if (!isInitialCall) {
+      // When it's not the initial call on the path traversing right, then
+      // this node's parent was not swapped, so the iopAncestor pointer is
+      // still valid here. We can ensure the balance of this node now, while
+      // we go back up the call stack.
+
+      // The version originally shown on the lecture slides had checked for
+      // nullptr here. In this version, we shouldn't really have to, since
+      // _ensureBalance now does this also, but also because if it had been
+      // a swap between the targetNode and the IOP here that caused the
+      // ancestor to no longer exist, then we would be in the base case branch
+      // of this function now, not here. In any case, it's okay to have a
+      // slightly redundant safety check, with almost no performance cost at
+      // all. We don't want to manually over-optimize this logic and possibly
+      // make a mistake.
+      if (iopAncestor) {
+        // std::cerr << "[" << iopAncestor << "]" << std::endl;
+        _ensureBalance(iopAncestor);
+      }
     }
     
     return d;
