@@ -7,6 +7,7 @@
 #
 # @author Wade Fagen-Ulmschneider, <waf@illinois.edu>
 # @author Jeffrey Tolar
+# @author Eric Huber - edits made for CS Fundamentals MOOC
 #
 
 
@@ -47,18 +48,18 @@ all: $(EXE)
 # - $(EXE) depends on all object files in $(OBJS)
 # - `patsubst` function adds the directory name $(OBJS_DIR) before every object file
 $(EXE): $(patsubst %.o, $(OBJS_DIR)/%.o, $(OBJS))
-	$(LD) $^ $(LDFLAGS) -o $@
+  $(LD) $^ $(LDFLAGS) -o $@
 
 # Ensure .objs/ exists:
 $(OBJS_DIR):
-	@mkdir -p $(OBJS_DIR)
-	@mkdir -p $(OBJS_DIR)/uiuc
+  @mkdir -p $(OBJS_DIR)
+  @mkdir -p $(OBJS_DIR)/uiuc
 
 # Rules for compiling source code.
 # - Every object file is required by $(EXE)
 # - Generates the rule requiring the .cpp file of the same name
 $(OBJS_DIR)/%.o: %.cpp | $(OBJS_DIR)
-	$(CXX) $(CXXFLAGS) $< -o $@
+  $(CXX) $(CXXFLAGS) $< -o $@
 
 # Additional dependencies for object files are included in the clang++
 # generated .d files (from $(DEPFILE_FLAGS)):
@@ -68,9 +69,9 @@ $(OBJS_DIR)/%.o: %.cpp | $(OBJS_DIR)
 
 # Standard C++ Makefile rules:
 clean:
-	rm -rf $(EXE) $(TEST) $(OBJS_DIR) $(CLEAN_RM) *.o *.d
+  rm -rf $(EXE) $(TEST) $(OBJS_DIR) $(CLEAN_RM) *.o *.d
 
 tidy: clean
-	rm -rf doc
+  rm -rf doc
 
 .PHONY: all tidy clean
