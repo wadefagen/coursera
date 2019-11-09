@@ -1,7 +1,5 @@
 /**
- * AVL tree auxiliary definitions, part 2
- *
- * Extra definitions for debugging, etc.
+ * AVL tree - Additional definitions for debugging, etc.
  *
  * @author
  *   Eric Huber
@@ -12,6 +10,32 @@
 #include <stack>
 
 #include "AVL.hpp"
+
+// printInOrder: Print the tree contents to std::cout using an in-order
+// traversal. The "_printInOrder" version is for internal use by the
+// public wrapper function "printInOrder".
+template <typename K, typename D>
+void AVL<K, D>::_printInOrder(TreeNode* node) const {
+  // Base case: if node is nullptr, then print a space and return.
+  if (!node) {
+    std::cout << " ";
+    return;
+  }
+  else {
+    // Recurse left:
+    _printInOrder(node->left);
+    // Print this node:
+    std::cout << "[" << node->key << " : " << node->data << "]";
+    // Recurse right:
+    _printInOrder(node->right);
+  }
+}
+
+// public interface for _printInOrder
+template <typename K, typename D>
+void AVL<K, D>::printInOrder() const {
+  _printInOrder(head_);
+}
 
 template <typename K, typename D>
 void AVL<K, D>::printVertical() const {
@@ -52,9 +76,9 @@ void AVL<K, D>::printVertical() const {
         margin_stack.push(margin_level+1);
       }
 
-      std::cout << "[" << n->key << ": " << n->data << "] ";
-      std::cout << "Bal: " << get_balance_factor(n) << " ";
-      std::cout << "Ht: " << get_height(n) << std::endl;
+      std::cout << "[" << n->key << ": \"" << n->data << "\"] ";
+      std::cout << "Bal: " << _get_balance_factor(n) << " ";
+      std::cout << "Ht: " << _get_height(n) << std::endl;
     }
     else {
       std::cout << "[]" << std::endl;
@@ -90,9 +114,9 @@ bool AVL<K, D>::_debugHeightCheck(TreeNode* cur) {
   if (!_debugHeightCheck(cur->right)) return false;
 
   // everything OK here?
-  int height_here = get_height(cur);
-  int height_left = get_height(cur->left);
-  int height_right = get_height(cur->right);
+  int height_here = _get_height(cur);
+  int height_left = _get_height(cur->left);
+  int height_right = _get_height(cur->right);
   int max_child_height = std::max(height_left, height_right);
   return 1 == height_here - max_child_height;
 
@@ -111,7 +135,7 @@ bool AVL<K, D>::_debugBalanceCheck(TreeNode* cur) {
   if (!_debugBalanceCheck(cur->right)) return false;
 
   // everything OK here?
-  int bal = get_height(cur->right) - get_height(cur->left);
+  int bal = _get_height(cur->right) - _get_height(cur->left);
   return (bal >= -1 && bal <= 1);
 
 }

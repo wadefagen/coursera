@@ -17,6 +17,7 @@ int main() {
   // declaring these variables here in the main() function scope.
 
   // Initialize a vector V_SIZE elements long, filled with 0 values
+  // (Please set to at least 1000 so the test cases won't have issues.)
   const int V_SIZE = 1000;
   std::vector<int> int_storage(V_SIZE, 0);
   // Reassign each item to hold a value matching its index
@@ -28,12 +29,10 @@ int main() {
   // of every integer value that we preallocated.
   std::vector<std::string> string_storage(V_SIZE);
   for (int i=0; i<V_SIZE; i++) {
-    // This will associate key i with string "(i)".
-    // For example, key 7 will have the data "(7)".
-    // We can use the "+" operator to combine std::string objects.
-    // The std::string constructor doesn't accept integers by default,
-    // so we have to use std::to_string instead for part of this.
-    string_storage[i] = std::string("(") + std::to_string(i) + std::string(")");
+    // This will associate key i with string "i".
+    // For example, key 7 will have the data "7".
+    // We have to use std::to_string to convert the ints to strings.
+    string_storage[i] = std::to_string(i);
   }
 
   // Let's create an inner scoping block here to restrict the lifetime of our
@@ -42,13 +41,18 @@ int main() {
   // be destroyed only after the tree has already gone out of scope at the
   // end, so the tree will be destroyed before the objects that it refers to.
   {
+    std::cout << "\nCreating AVL tree now..." << std::endl;
     AVL<int, std::string> t;
 
     // Let's enable conversion from bool to strings "true" and "false"
     // for the std::cout stream. This is just to show that the empty()
     // member function is working.
     std::cout << std::boolalpha;
-    std::cout << "AVL tree empty at the beginning? " << t.empty() << std::endl;
+    const bool empty_at_beginning = t.empty();
+    std::cout << "AVL tree empty at the beginning? " << empty_at_beginning << std::endl;
+    if (!empty_at_beginning) {
+      throw std::runtime_error("Error: empty() should have been true at the beginning");
+    }
 
     std::cout << "Inserting items..." << std::endl;
 
@@ -73,26 +77,30 @@ int main() {
     // member functions are designed to find a key that matches the argument
     // by value equivalence, not by memory identity.
 
-    std::cout << "AVL tree empty after insertions? " << t.empty() << std::endl;
+    const bool empty_after_insertions = t.empty();
+    std::cout << "AVL tree empty after insertions? " << empty_after_insertions << std::endl;
+    if (empty_after_insertions) {
+      throw std::runtime_error("Error: empty() should have been false after insertions");
+    }
 
-    std::cout << "Current tree contents in order:" << std::endl;
+    std::cout << "\nCurrent tree contents in order:" << std::endl;
     t.printInOrder();
     std::cout << std::endl;
 
-    std::cout << "Using find to show that 51 has been inserted:" << std::endl;
+    std::cout << "\nUsing find to show that 51 has been inserted:" << std::endl;
     std::cout << "t.find(51): " << t.find(51) << std::endl;
 
-    std::cout << "Trying to remove some items:" << std::endl;
+    std::cout << "\nTrying to remove some items:" << std::endl;
     std::cout << "t.remove(11): " << t.remove(11) << std::endl;
     std::cout << "t.remove(51): " << t.remove(51) << std::endl;
     std::cout << "t.remove(19): " << t.remove(19) << std::endl;
     std::cout << "t.remove(6): " << t.remove(6) << std::endl;
 
-    std::cout << "Current tree contents in order:" << std::endl;
+    std::cout << "\nCurrent tree contents in order:" << std::endl;
     t.printInOrder();
     std::cout << std::endl;
 
-    std::cout << "Vertical printout of the tree:" << std::endl;
+    std::cout << "\nVertical printout of the tree:" << std::endl;
     t.printVertical();
 
     // The following "find" query throws an exception when the item is not
@@ -107,7 +115,8 @@ int main() {
       std::cout << std::endl;
     }
     catch (const std::runtime_error& e) {
-      std::cout << "(OK) Caught example exception with message: " << e.what() << std::endl;
+      std::cout << "(OK) Caught example exception with the following message:" << std::endl
+        << "\"" << e.what() << "\"" << std::endl;
     }
 
     // Another example
@@ -118,38 +127,62 @@ int main() {
       std::cout << std::endl;
     }
     catch (const std::runtime_error& e) {
-      std::cout << "(OK) Caught example exception with message: " << e.what() << std::endl;
+      std::cout << "(OK) Caught example exception with the following message:" << std::endl
+        << "\"" << e.what() << "\"" << std::endl;
     }
+
+    // Clear the tree contents (remove all nodes)
+    t.clear_tree();
 
     // Insert a lot of items to test the tree.
-    for (int i=60; i<=899; i++) {
-      // t.printVertical();
-      // std::cerr << "going to insert " << i << std::endl;
+    for (int i=10; i<=900; i++) {
       t.insert(int_storage[i], string_storage[i]);
     }
-    std::cerr << "\nInsert test OK\n";
+    std::cout << "\nInsert test OK\n";
 
     // Remove a lot of items to test the tree.
-    for (int i=60; i<=899; i+=3) {
-      // t.printVertical();
+    for (int i=10; i<=900; i+=7) {
       t.remove(i);
     }
-    std::cerr << "\nRemove test OK\n";
+    for (int i=900; i>=10; i-=3) {
+      // The "contains" check helps avoid throwing an exception when
+      // items are not found.
+      if (t.contains(i)) {
+        t.remove(i);
+      }
+    }
+    std::cout << "\nRemove test OK\n";
 
-    
-    
-    // t.printVertical();
-
+    // Insert items again and remove some again
+    for (int i=10; i<=900; i++) {
+      // Only insert items that aren't already there.
+      if (!t.contains(i)) {
+        t.insert(int_storage[i], string_storage[i]);
+      }
+    }
+    for (int i=10; i<=900; i+=7) {
+      if (t.contains(i)) {
+        t.remove(i);
+      }
+      // "j" will be an index towards the other side of the number range
+      int j = 900 - i + 10;
+      if (t.contains(j)) {
+        t.remove(j);
+      }
+    }
+    std::cout << "\nAdditional tests OK\n";
 
     // End of the block:
     // The AVL tree object will be destroyed now when it goes out of scope.
     // This will trigger all remaining items to be removed.
+    std::cout << "\nAVL tree will go out of scope and be destroyed now."
+      << "\n(All nodes will be removed...)\n";
   }
 
   // Show that the program exited without crashing. If you try other
   // experiments in the code block above, you may find that they throw
   // uncaught exceptions from our class functions and crash to the terminal.
-  std::cout << "Exiting program normally." << std::endl;
+  std::cout << "\nThe program is exiting normally." << std::endl;
 
   return 0;
 }

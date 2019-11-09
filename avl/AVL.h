@@ -1,6 +1,6 @@
 /**
  * AVL class outline
- * 
+ *
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
  */
@@ -51,6 +51,12 @@ class AVL {
     void insert(const K& key, const D& data);
     const D& remove(const K& key);
 
+    // "contains" is like "find", but it doesn't return a reference to
+    // the data item. It just returns a bool indicating whether the item
+    // exists or not. If the item is not found, we don't need to throw
+    // an exception.
+    bool contains(const K& key);
+
   private:
     class TreeNode {
       public:
@@ -79,7 +85,7 @@ class AVL {
 
     // Find the node with this key and return its data.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
-    
+
     // Actually remove the node that this pointer points to.
     // (This may need to invoke _iopRemove in some cases.)
     const D& _remove(TreeNode*& node);
@@ -90,7 +96,7 @@ class AVL {
     // This is called by "remove" to recursively remove the correct node
     // and rebalance as it returns.
     const D& _find_and_remove(const K& key, TreeNode*& cur);
-    
+
     // _remove relies on the following functions. (The organization is a
     // little different from the bst directory example.)
 
@@ -102,7 +108,7 @@ class AVL {
     // more convenient and helps us avoid making a mistake in the logic.
     const D& _iopRemove(TreeNode*& targetNode);
     const D& _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor);
-    
+
     // _swap_nodes: This swaps the node positions (rewiring pointers as
     // necessary) and also swaps the node heights. The intended usage is
     // that node1 is higher (such as some internal node to remove) and node2
@@ -137,15 +143,13 @@ class AVL {
     void _rotateRightLeft(TreeNode*& cur);
     void _rotateLeftRight(TreeNode*& cur);
 
-  public:
-
-    // get_height: A wrapper for checking the height of a subtree.
+    // _get_height: A wrapper for checking the height of a subtree.
     // If a node doesn't exist (nullptr), then return -1.
     // Otherwise, return the node's previously-recorded subtree height.
     // (This function was just shown as "height(...)" in some of the lecture
     //  videos. It's been renamed here to clarify that it's different from
     //  the node's height member variable.)
-    int get_height(TreeNode*& node) const {
+    int _get_height(TreeNode*& node) const {
       if (!node) {
         // A non-existent node has a height of 1
         return -1;
@@ -156,18 +160,20 @@ class AVL {
       }
     }
 
-    // get_balance_factor: A helper function for safely calculating the balance
+    // _get_balance_factor: A helper function for safely calculating the balance
     // factor of the node that is passed as the argument.
-    int get_balance_factor(TreeNode*& node) const {
+    int _get_balance_factor(TreeNode*& node) const {
       if (!node) {
         // A non-existent node has a balance factor of 0
         return 0;
       }
       else {
         // Calculate the balance factor safely and return it.
-        return get_height(node->right) - get_height(node->left);
+        return _get_height(node->right) - _get_height(node->left);
       }
     }
+
+  public:
 
     // empty: Tells whether the tree is empty or not.
     bool empty() const {
@@ -175,33 +181,6 @@ class AVL {
       // (This happens implicitly because the value of head_ is cast to
       // bool and logically negated.)
       return !head_;
-    }
-
-  private:
-
-    // printInOrder: Print the tree contents to std::cout using an in-order
-    // traversal. The "_printInOrder" version is for internal use by the
-    // public wrapper function "printInOrder".
-    void _printInOrder(TreeNode* node) const {
-      // Base case: if node is nullptr, then print a space and return.
-      if (!node) {
-        std::cout << " ";
-        return;
-      }
-      else {
-        // Recurse left:
-        _printInOrder(node->left);
-        // Print this node:
-        std::cout << "[" << node->key << " : " << node->data << "]";
-        // Recurse right:
-        _printInOrder(node->right);
-      }
-    }
-
-  public:
-
-    void printInOrder() const {
-      _printInOrder(head_);
     }
 
     // clear_tree: Remove the head item until the tree is empty.
@@ -222,13 +201,23 @@ class AVL {
       clear_tree();
     }
 
-
+  public:
     // Prints the tree vertically without any fancy formatting in the margin.
     // For debugging purposes.
     void printVertical() const;
 
+  public:
+    // printInOrder: Print the tree contents to std::cout using an in-order
+    // traversal. The "_printInOrder" version is for internal use by the
+    // public wrapper function "printInOrder".
+    void printInOrder() const;
+  private:
+    void _printInOrder(TreeNode* node) const;
+
+  public:
     // More debugging functions to help check the AVL tree properties (slow)
     bool runDebuggingChecks();
+  private:
     bool _debugHeightCheck(TreeNode* cur);
     bool _debugBalanceCheck(TreeNode* cur);
     bool _debugOrderCheck(TreeNode* cur);

@@ -47,6 +47,24 @@ const D& AVL<K, D>::find(const K& key) {
   return node->data;
 }
 
+template <typename K, typename D>
+bool AVL<K, D>::contains(const K& key) {
+  // This is just like "find" but when the item is not found, we just return
+  // false instead of throwing an exception. When found, return true.
+  
+  TreeNode*& node = _find(key, head_);
+
+  // Carefully note what the following return statement does:
+  // If the item was found, then (node != nullptr) is true, so just return
+  // the evaluated comparison, which has the value true. If the item was
+  // not found, then just the opposite: the expression will evaluate to
+  // false. So again, simply returning the expression itself gives the
+  // correct value: false.
+
+  // This will be "true" when found, and "false" when not found:
+  return node != nullptr;
+}
+
 // Note about the use of "typename" in the below definition:
 // This is required so that although we're writing at global scope here, we
 // can refer to the TreeNode type definition that is part of AVL.
@@ -441,7 +459,7 @@ void AVL<K, D>::_updateHeight(TreeNode*& cur) {
   // two children's heights. The get_height function safely handles the
   // case where a child is just nullptr (no node exists), in which case
   // its implicit height is -1.
-  cur->height = 1 + std::max(get_height(cur->left), get_height(cur->right));
+  cur->height = 1 + std::max(_get_height(cur->left), _get_height(cur->right));
 }
 
 template <typename K, typename D>
@@ -451,7 +469,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
   if (!cur) return;
 
   // Calculate the balance factor for this node:
-  const int initial_balance = get_balance_factor(cur);
+  const int initial_balance = _get_balance_factor(cur);
 
   // Error checking to make sure our implementation doesn't have a bug
   if (initial_balance < -2 || initial_balance > 2) {
@@ -460,7 +478,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     msg += " ; This should never happen here.";
     std::cerr << "key: " << cur->key << " data: " << cur->data << std::endl;
     std::cerr << "nl: " << cur->left->key << " nr: " << cur->right->key << std::endl;
-    std::cerr << "hl: " << get_height(cur->left) << " hr: " << get_height(cur->right) << std::endl;
+    std::cerr << "hl: " << _get_height(cur->left) << " hr: " << _get_height(cur->right) << std::endl;
     throw std::runtime_error(msg);
   }
 
@@ -469,7 +487,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
   // perform a rotation to correct it.
 
   if (initial_balance == -2) {
-    const int l_balance = get_balance_factor(cur->left);
+    const int l_balance = _get_balance_factor(cur->left);
     if (l_balance == -1 || l_balance == 0) {
       _rotateRight(cur);
     }
@@ -485,7 +503,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     }
   }
   else if (initial_balance == 2) {
-    const int r_balance = get_balance_factor(cur->right);
+    const int r_balance = _get_balance_factor(cur->right);
     if (r_balance == 1 || r_balance == 0) {
       _rotateLeft(cur);
     }
@@ -507,7 +525,7 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
 
   // Final error checking:
   // We expect that this should have fixed any imbalance now.
-  const int final_balance = get_balance_factor(cur);
+  const int final_balance = _get_balance_factor(cur);
   if (final_balance < -1 || final_balance > 1) {
     std::string msg("ERROR: Invalid balance factor after _ensureBalance: ");
     msg += std::to_string(final_balance);
