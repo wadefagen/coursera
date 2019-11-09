@@ -739,7 +739,6 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bo
       // all. We don't want to manually over-optimize this logic and possibly
       // make a mistake.
       if (iopAncestor) {
-        // std::cerr << "[" << iopAncestor << "]" << std::endl;
         _ensureBalance(iopAncestor);
       }
     }

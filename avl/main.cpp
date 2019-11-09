@@ -18,11 +18,12 @@ int main() {
 
   // We'll allocate this many items contiguously in memory externally to the
   // AVL tree, which the tree will be able to reference in its nodes.
-  // (Please set to at least 1000 so the test cases won't have issues.)
+  // We require at least 100 here to run the basic examples shown, and at
+  // least 1000 to run the extended unit tests for debugging.
   const int V_SIZE = 1000;
 
-  if (V_SIZE < 1000) {
-    throw std::runtime_error("Please set V_SIZE to at least 1000");
+  if (V_SIZE < 100) {
+    throw std::runtime_error("Please set V_SIZE to at least 100");
   }
 
   // Initialize a vector V_SIZE elements long, filled with 0 values
@@ -138,57 +139,63 @@ int main() {
         << "\"" << e.what() << "\"" << std::endl;
     }
 
-    // --- Begin extended tests ---
+    if (V_SIZE >= 1000) {
+      // --- Begin extended tests ---
 
-    std::cout << "\n --- Beginning extended tests ---\n"
-      << "  (Many items will be inserted and removed silently...)" << std::endl;
+      std::cout << "\n --- Beginning extended tests ---\n"
+        << "  (Many items will be inserted and removed silently...)" << std::endl;
 
-    // Clear the tree contents (remove all nodes)
-    t.clear_tree();
+      // Clear the tree contents (remove all nodes)
+      t.clear_tree();
 
-    // Insert a lot of items to test the tree.
-    for (int i=10; i<=900; i++) {
-      t.insert(int_storage[i], string_storage[i]);
-    }
-    std::cout << "\nInsert test OK\n";
-
-    // Remove a lot of items to test the tree.
-    for (int i=10; i<=900; i+=7) {
-      t.remove(i);
-    }
-    for (int i=900; i>=10; i-=3) {
-      // The "contains" check helps avoid throwing an exception when
-      // items are not found.
-      if (t.contains(i)) {
-        t.remove(i);
-      }
-    }
-    std::cout << "\nRemove test OK\n";
-
-    // Insert items again and remove some again
-    for (int i=10; i<=900; i++) {
-      // Only insert items that aren't already there.
-      if (!t.contains(i)) {
+      // Insert a lot of items to test the tree.
+      for (int i=10; i<=900; i++) {
         t.insert(int_storage[i], string_storage[i]);
       }
-    }
-    for (int i=10; i<=900; i+=7) {
-      if (t.contains(i)) {
+      std::cout << "\nInsert test OK\n";
+
+      // Remove a lot of items to test the tree.
+      for (int i=10; i<=900; i+=7) {
         t.remove(i);
       }
-      // "j" will be an index towards the other side of the number range
-      int j = 900 - i + 10;
-      if (t.contains(j)) {
-        t.remove(j);
+      for (int i=900; i>=10; i-=3) {
+        // The "contains" check helps avoid throwing an exception when
+        // items are not found.
+        if (t.contains(i)) {
+          t.remove(i);
+        }
       }
-    }
-    std::cout << "\n --- End of extended tests ---" << std::endl;
-    
-    // --- End of extended tests ---
+      std::cout << "\nRemove test OK\n";
 
-    // End of the block:
-    // The AVL tree object will be destroyed now when it goes out of scope.
-    // This will trigger all remaining items to be removed.
+      // Insert items again and remove some again
+      for (int i=10; i<=900; i++) {
+        // Only insert items that aren't already there.
+        if (!t.contains(i)) {
+          t.insert(int_storage[i], string_storage[i]);
+        }
+      }
+      for (int i=10; i<=900; i+=7) {
+        if (t.contains(i)) {
+          t.remove(i);
+        }
+        // "j" will be an index towards the other side of the number range
+        int j = 900 - i + 10;
+        if (t.contains(j)) {
+          t.remove(j);
+        }
+      }
+      std::cout << "\n --- End of extended tests ---" << std::endl;
+      
+      // --- End of extended tests ---      
+    }
+    else {
+      std::cout << "\n(V_SIZE is set too small. skipping extended unit tests.)" << std::endl;
+    }
+
+    // We're about to exit the block scope that the AVL tree object was
+    // created in, on the stack. The AVL tree object will be destroyed now
+    // when it goes out of scope. This will trigger all remaining items to
+    // be removed.
     std::cout << "\nAVL tree will go out of scope and be destroyed now."
       << "\n(All nodes will be removed...)\n";
   }
@@ -196,7 +203,7 @@ int main() {
   // Show that the program exited without crashing. If you try other
   // experiments in the code block above, you may find that they throw
   // uncaught exceptions from our class functions and crash to the terminal.
-  std::cout << "\nThe program is exiting normally." << std::endl;
+  std::cout << "\nSUCCESS - The program is exiting normally." << std::endl;
 
   return 0;
 }
