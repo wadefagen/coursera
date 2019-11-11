@@ -93,6 +93,12 @@ void AVL<K, D>::printVertical() const {
 // In practice this kind of check could be disabled after the library
 // was fully tested.
 
+// This static constexpr was declared in the class header and an initial
+// value was given for it there. We write this here as a formality that
+// some older compiler versions may require.
+template <typename K, typename D>
+constexpr bool AVL<K, D>::ENABLE_DEBUGGING_CHECKS;
+
 template <typename K, typename D>
 bool AVL<K, D>::runDebuggingChecks() {
   if (!_debugHeightCheck(head_)) throw std::runtime_error("ERROR: _debugHeightCheck failed");

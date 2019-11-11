@@ -51,6 +51,10 @@
 // - The _ensureBalance function accounts for an additional possibility where
 //   there is a balance of 0 in the direction of an initial imbalance. This
 //   can only happen after a removal, not after an insertion.
+// - Some other helper functions have been added to help with testing and
+//   debugging the implementation. Some of these cause the implementation
+//   to run much slower than the theoretical speed of an AVL tree, but they
+//   could be deactivated if desired.
 
 #pragma once
 
@@ -88,14 +92,21 @@ class AVL {
         // *See note 1 below about how references are being used here.
         const K& key;
         const D& data;
-        TreeNode *left, *right;
+        // Note that you can declare multiple pointers on the same line as
+        // shorthand, like this:
+        //   TreeNode *left, *right;
+        // But since this requires you to write the "*" with each variable
+        // name, it can be a little confusing, or prone to making a mistake.
+        // Instead, you can declare the pointers on separate lines like this:
+        TreeNode* left;
+        TreeNode* right;
         int height;
         // **See note 2 below about how this initialization list is styled.
         TreeNode(const K& key, const D& data)
           : key(key), data(data), left(nullptr), right(nullptr), height(0) { }
     };
 
-    TreeNode *head_;
+    TreeNode* head_;
 
     // These internal helper functions are private because they are only
     // meant to be used by other member functions of our class. Please see
@@ -252,6 +263,12 @@ class AVL {
     bool _debugHeightCheck(TreeNode* cur);
     bool _debugBalanceCheck(TreeNode* cur);
     bool _debugOrderCheck(TreeNode* cur);
+
+    // This constant controls whether debugging checks will be run after
+    // insertions and removals. It's possible to give it an initial value
+    // right here because it's a compile-time constant (constexpr) and of
+    // bool type. (You can't do this for all member variables of all types.)
+    static constexpr bool ENABLE_DEBUGGING_CHECKS = true;
 
 };
 

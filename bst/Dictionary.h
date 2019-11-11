@@ -43,7 +43,14 @@ class Dictionary {
         // *See note 1 below about how references are being used here.
         const K& key;
         const D& data;
-        TreeNode *left, *right;
+        // Note that you can declare multiple pointers on the same line as
+        // shorthand, like this:
+        //   TreeNode *left, *right;
+        // But since this requires you to write the "*" with each variable
+        // name, it can be a little confusing, or prone to making a mistake.
+        // Instead, you can declare the pointers on separate lines like this:
+        TreeNode* left;
+        TreeNode* right;
         // **See note 2 below about how this initialization list is styled.
         TreeNode(const K& key, const D& data)
           : key(key), data(data), left(nullptr), right(nullptr) { }

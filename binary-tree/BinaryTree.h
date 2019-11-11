@@ -17,7 +17,14 @@ class BinaryTree {
       public:
         // *See note below about how references are being used here.
         T & data;
-        TreeNode *left, *right;
+        // Note that you can declare multiple pointers on the same line as
+        // shorthand, like this:
+        //   TreeNode *left, *right;
+        // But since this requires you to write the "*" with each variable
+        // name, it can be a little confusing, or prone to making a mistake.
+        // Instead, you can declare the pointers on separate lines like this:
+        TreeNode* left;
+        TreeNode* right;
         // **See note below about how this initialization list is styled.
         TreeNode(T & data) : data(data), left(nullptr), right(nullptr) { }
     };
