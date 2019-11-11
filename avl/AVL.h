@@ -5,7 +5,7 @@
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
  */
 
-// Important notes from the course staff:
+// Notes from TA Eric:
 
 // Before studying this example, please first study these other example
 // directories:
@@ -17,15 +17,40 @@
 // example was directly based on the code in the bst directory, and many
 // of the specific code comments in that project also apply to this example.
 // (Anything that appears to lack comments in this AVL example was probably
-// already explained in the other examples. There may be some comments in
-// this example that are nearly the same as those in the BST example.)
+// already explained in the other examples.)
+// The bst example contains a lot of commentary about how this implementation
+// stores references, which drastically affects the overall design.
+// In contrast, the binary-tree-traversals example stores value copies in the
+// nodes instead of references, so its fundamental design is different.
 
-// This example is based on original work by Prof. Wade Fagen-Ulmschneider as
-// shown in lecture. The course staff have edited it slightly and added code
-// comments, so the line numbering will not match up exactly. Some repeated
-// chunks of code were refactored into small helper functions, such as
-// get_balance_factor, to better check for correctness. There are also some
-// additional lines of code here and there for error checking. -Eric
+// This example is based on original work by Prof. Wade Fagen-Ulmschneider
+// as shown in lecture. We implement some remaining functions that had not
+// been shown in lecture, as well as some additional helper functions for
+// clarity of code reading and for debugging. (The code checks itself for
+// correctness when you compile and run the included main program.) Since
+// the code is not identical to the fragments shown in lecture, the line
+// numbers from lecture will not match.
+
+// Here are the especially substantial changes from the parts that are shown
+// in lecture:
+// - The node swapping function has been changed. (The lectures show the
+//   calls being made to this function but not how it is implemented. As the
+//   implementation has been changed, the function calls also look slightly
+//   different, and now the function returns something. The swap algorithm
+//   is also discussed in the commentary on the bst example.)
+// - The _iopRemove method was changed to reflect the changes to the node
+//   swapping function. The _iopRemove function has an extra parameter to
+//   track whether it's the first step in recursion or not. In addition,
+//   there is a separate version of the _iopRemove provided as a wrapper
+//   function to simplify the beginning of the recursion process.
+// - The lectures implied the existence of a helper function called "height".
+//   For clarity, this has been renamed to "_get_height".
+// - The insert and remove methods have additional helper functions that are
+//   similar to _find, but help to simplify the rebalancing process during
+//   recursion.
+// - The _ensureBalance function accounts for an additional possibility where
+//   there is a balance of 0 in the direction of an initial imbalance. This
+//   can only happen after a removal, not after an insertion.
 
 #pragma once
 
@@ -80,8 +105,8 @@ class AVL {
     // Here is an overview of how these functions call each other
     // sequentially when the public functions are used:
     // find -> _find
-    // insert -> _find_and_insert
-    // remove -> _find_and_remove -> _remove -> _iopRemove
+    // insert -> _find_and_insert (-> possibly, rotations)
+    // remove -> _find_and_remove -> _remove (-> _iopRemove, swapping, rotations)
 
     // Find the node with this key and return its data.
     TreeNode*& _find(const K& key, TreeNode*& cur) const;
@@ -105,8 +130,8 @@ class AVL {
     // To recursively find the IOP, we traverse over the ancestors of the
     // IOP until we find it. The single-argument version of _iopRemove calls
     // the other version of _iopRemove on the first node to the left, which
-    // is the the earliest ancestor; this makes things more convenient and
-    // helps us avoid making a mistake in the logic.
+    // is the earliest ancestor; this makes things more convenient and helps
+    // us avoid making a mistake in the logic.
     const D& _iopRemove(TreeNode*& targetNode);
     // The iopAncestor argument tracks the nodes being traversed on the way
     // down as we search for the IOP that can be swapped with the target.

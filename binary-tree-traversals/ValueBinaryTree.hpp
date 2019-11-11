@@ -116,7 +116,7 @@ void ValueBinaryTree<T>::createCompleteTree(const std::vector<T>& contents) {
 
     // With our new node created, we need to push pointers-to-pointers to the
     // left and right children onto our queue. Remember to store the addresses
-    // of the the child pointers, since we are making pointers-to-pointers.
+    // of the child pointers, since we are making pointers-to-pointers.
     childPtrPtrQueue.push(&(actualChildPtr->left));
     childPtrPtrQueue.push(&(actualChildPtr->right));
 

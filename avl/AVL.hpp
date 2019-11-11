@@ -31,7 +31,7 @@
 // Please check out the "binary-tree-traversals" and "bst" example
 // directories first for insight on how this works. The "bst" example
 // uses a very similar reference-storing design, and I've put additional
-// notes there about the design tradeoffs inherent in that.
+// notes there about the design trade-offs inherent in that.
 
 // ------
 

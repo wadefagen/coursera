@@ -168,11 +168,24 @@ int main() {
       std::cout << "\nRemove test OK\n";
 
       // Insert items again and remove some again
-      for (int i=10; i<=900; i++) {
+      for (int i=10; i<=899; i+=2) {
         // Only insert items that aren't already there.
+        // Let's try to mix up the order of the insertions here
+        // a little bit by inserting two adjacent numbers in order
+        // and then inserting something towards the other end of the
+        // number range.
         if (!t.contains(i)) {
           t.insert(int_storage[i], string_storage[i]);
         }
+        if (!t.contains(i+1)) {
+          t.insert(int_storage[i+1], string_storage[i+1]);
+        }
+        // "j" will be an index towards the other side of the number range
+        int j = 900 - i + 10;
+        if (!t.contains(j)) {
+          t.insert(int_storage[j], string_storage[j]);
+        }
+
       }
       for (int i=10; i<=900; i+=7) {
         if (t.contains(i)) {
