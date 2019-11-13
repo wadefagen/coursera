@@ -660,6 +660,8 @@ void AVL<K, D>::_rotateLeftRight(TreeNode*& cur) {
 template <typename K, typename D>
 const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 
+  // Here, the target node means the node we intend to remove.
+
   if (!targetNode) {
     throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode) called on nullptr");
   }
@@ -689,6 +691,13 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode) {
 
 template <typename K, typename D>
 const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bool isInitialCall) {
+
+  // Here, iopAncestor is pointing to either the most recent ancestor node
+  // on the path as we head down to the actual IOP, or it is the IOP itself.
+  // (That is the base case that we will reach.)
+
+  // "isInitialCall" is set to true the first time we call this function on
+  // the way down, and otherwise, we set it to false (when we recurse here).
 
   if (!targetNode) {
     throw std::runtime_error("ERROR: _iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor): targetNode is null");
@@ -788,8 +797,8 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bo
     // to worry about _iopRemove being called yet again here.
 
     // Remove the swapped node (at IoP's position) and return up the call
-    // stack. (What we return is actually a reference to the const data
-    // that was removed. This is clear from the return type of _remove.)
+    // stack. What we return is actually a reference to the const data
+    // that was removed.
     const D& d = _remove(movedTarget);
     return d;
   }

@@ -37,9 +37,18 @@ void AVL<K, D>::printInOrder() const {
   _printInOrder(head_);
 }
 
+// Print a simple vertical tree diagram. Indentation shows level,
+// and children are listed under parents:
+//   parent
+//     left child
+//     right child
+// This repeats iteratively with nested indentation. (This could be done
+// recursively as well.)
 template <typename K, typename D>
 void AVL<K, D>::printVertical() const {
 
+  // Stacks maintain the next node contents to display as well as the
+  // corresponding amount of indentation to show in the margin.
   std::stack<TreeNode*> node_stack;
   std::stack<int> margin_stack;
 
@@ -68,7 +77,8 @@ void AVL<K, D>::printVertical() const {
     if (n) {
 
       // Only push child markers if at least one child exists.
-      // This makes the output clearer.
+      // This makes the leaf output clearer: if both children are nullptr,
+      // they are simply not printed.
       if (n->left || n->right) {
         node_stack.push(n->right);
         margin_stack.push(margin_level+1);
@@ -76,11 +86,15 @@ void AVL<K, D>::printVertical() const {
         margin_stack.push(margin_level+1);
       }
 
+      // show key, data pair
       std::cout << "[" << n->key << ": \"" << n->data << "\"] ";
+      // balance factor
       std::cout << "Bal: " << _get_balance_factor(n) << " ";
+      // height
       std::cout << "Ht: " << _get_height(n) << std::endl;
     }
     else {
+      // no child (nullptr)
       std::cout << "[]" << std::endl;
     }
 
@@ -93,11 +107,8 @@ void AVL<K, D>::printVertical() const {
 // In practice this kind of check could be disabled after the library
 // was fully tested.
 
-// This static constexpr was declared in the class header and an initial
-// value was given for it there. We write this here as a formality that
-// some older compiler versions may require.
-template <typename K, typename D>
-constexpr bool AVL<K, D>::ENABLE_DEBUGGING_CHECKS;
+// For practice, think about why the recursive checks in these functions are
+// logically valid.
 
 template <typename K, typename D>
 bool AVL<K, D>::runDebuggingChecks() {

@@ -5,24 +5,6 @@
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
  */
 
-// Notes from TA Eric:
-
-// Before studying this example, please first study these other example
-// directories:
-//   binary-tree
-//   binary-tree-traversals
-//   bst
-// These contain notes that are useful prerequisite knowledge for better
-// understanding how this AVL example is implemented. In particular, this
-// example was directly based on the code in the bst directory, and many
-// of the specific code comments in that project also apply to this example.
-// (Anything that appears to lack comments in this AVL example was probably
-// already explained in the other examples.)
-// The bst example contains a lot of commentary about how this implementation
-// stores references, which drastically affects the overall design.
-// In contrast, the binary-tree-traversals example stores value copies in the
-// nodes instead of references, so its fundamental design is different.
-
 // This example is based on original work by Prof. Wade Fagen-Ulmschneider
 // as shown in lecture. We implement some remaining functions that had not
 // been shown in lecture, as well as some additional helper functions for
@@ -31,8 +13,43 @@
 // the code is not identical to the fragments shown in lecture, the line
 // numbers from lecture will not match.
 
-// Here are the especially substantial changes from the parts that are shown
-// in lecture:
+// Notes from TA Eric:
+// If you are studying AVL from the lectures, focus first on the theory of
+// how the AVL structure is meant to work. The very specific details of the
+// implementation choices here are not necessarily crucial to understanding
+// AVL in general. There are other, possibly simpler, ways to implement it.
+
+// The recursive nature of this example is a bit complicated so many comments
+// have been added to explain how it works. (Some of the comments may seem a
+// bit redundant. I can't assume anyone will read the whole thing from start
+// to finish.) There are many helper functions that break out the logic into
+// small pieces. The easiest way to understand the correctness of the
+// recursion is to focus on the logical properties of the current state of
+// the program (those conditions which are required or guaranteed by each of
+// the member functions) before and after each call is made. For example,
+// assume that calling _ensureBalance on a node will ensure that the subtree
+// there becomes balanced, which may imply that some rotations are performed.
+
+// Before studying this example, please first study these other example
+// directories:
+//   binary-tree
+//   binary-tree-traversals
+//   bst
+// These contain notes that are useful prerequisite knowledge for better
+// understanding how this AVL example is implemented. In particular, this
+// example has underlying similarities to the code in the bst directory, and
+// many of the specific code comments in that project also apply to this
+// example.
+
+// The BST example (in /bst) contains some additional commentary about
+// how both that example and this AVL example are implemented to store
+// references. That drastically affects the overall design. In contrast,
+// the /binary-tree-traversals example stores value copies in the nodes
+// instead of references, so its fundamental approach to memory usage is
+// very different.
+
+// As mentioned above, this AVL example has been revised and expanded
+// from the fragments shown in lecture. Here are some substantial changes:
 // - The node swapping function has been changed. (The lectures show the
 //   calls being made to this function but not how it is implemented. As the
 //   implementation has been changed, the function calls also look slightly
@@ -62,7 +79,7 @@
 #include <stdexcept>
 // We include <utility> for the std::swap function
 #include <utility>
-// We'll add a "printInOrder" function to help us inspect the results.
+// We'll add some tree printing functions to help us inspect the results.
 // This will require std::cout from <iostream>.
 #include <iostream>
 // We include <algorithm> for std::max
@@ -89,7 +106,8 @@ class AVL {
   private:
     class TreeNode {
       public:
-        // *See note 1 below about how references are being used here.
+        // *See note 1 at the bottom of this file for discussion about how
+        // references are being used here.
         const K& key;
         const D& data;
         // Note that you can declare multiple pointers on the same line as
@@ -101,7 +119,8 @@ class AVL {
         TreeNode* left;
         TreeNode* right;
         int height;
-        // **See note 2 below about how this initialization list is styled.
+        // **See note 2 at the bottom of this file for discussion about how
+        // this initialization list is styled.
         TreeNode(const K& key, const D& data)
           : key(key), data(data), left(nullptr), right(nullptr), height(0) { }
     };
@@ -257,7 +276,10 @@ class AVL {
     void _printInOrder(TreeNode* node) const;
 
   public:
-    // More debugging functions to help check the AVL tree properties (slow)
+    // More debugging functions to help check the AVL tree properties.
+    // These are not meant to be fast and they are optional components.
+    // I haven't fully commented how they work but the implementations
+    // are in AVL-extra.hpp.
     bool runDebuggingChecks();
   private:
     bool _debugHeightCheck(TreeNode* cur);
@@ -265,12 +287,28 @@ class AVL {
     bool _debugOrderCheck(TreeNode* cur);
 
     // This constant controls whether debugging checks will be run after
-    // insertions and removals. It's possible to give it an initial value
-    // right here because it's a compile-time constant (constexpr) and of
-    // bool type. (You can't do this for all member variables of all types.)
+    // insertions and removals. Note that this makes the data structure run
+    // below its intended theoretical speed.
+    //   Also, here's an obscure syntax note:
+    // It's possible to give this an initial value here because it's a
+    // compile-time constant (constexpr) and of bool type, and it's static
+    // (shared for the whole class), and it's a templated class. That is
+    // pretty specific... You can't do this for all member variables of all
+    // types. In newer versions of C++, C++17 and later, there are more
+    // flexible and consistent ways to define constants like this for the
+    // whole class. This version of the example has been written with C++14
+    // compatibility in mind.
     static constexpr bool ENABLE_DEBUGGING_CHECKS = true;
 
 };
+
+// (Very obscure syntax note)
+// C++14 compatibility: This external definition of the static constexpr is
+// sometimes needed in C++14, but it is deprecated in C++17 and later.
+// In any case, the actual setting is initialized in the class definition
+// itself where this member is first mentioned.
+template <typename K, typename D>
+constexpr bool AVL<K, D>::ENABLE_DEBUGGING_CHECKS;
 
 // Note 1:
 // That this implementation of a tree is storing explicit aliases to memory
