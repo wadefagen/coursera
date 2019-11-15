@@ -1,8 +1,7 @@
 /**
  * AVL tree - Additional definitions for debugging, etc.
  *
- * @author
- *   Eric Huber
+ * @author Eric Huber
  */
 
 #pragma once

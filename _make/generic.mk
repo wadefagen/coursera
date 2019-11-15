@@ -7,7 +7,7 @@
 #
 # @author Wade Fagen-Ulmschneider, <waf@illinois.edu>
 # @author Jeffrey Tolar
-# @author Eric Huber - edits made for CS Fundamentals MOOC
+# @author Eric Huber (edits made for CS Fundamentals MOOC)
 #
 
 

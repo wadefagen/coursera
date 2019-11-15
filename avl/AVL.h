@@ -1,8 +1,8 @@
 /**
  * AVL class outline
  *
- * @author
- *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
+ * @author Wade Fagen-Ulmschneider <waf@illinois.edu>
+ * @author Eric Huber
  */
 
 // This example is based on original work by Prof. Wade Fagen-Ulmschneider

@@ -3,12 +3,10 @@
  *
  * (Some versions of the lecture videos called this file "AVL.cpp",
  *  but we are renaming it to "AVL.hpp" as it includes templated
- *  implementations and would typically be included as a header.
- *  The line numbers in this file do not exactly match what is shown in the
- *  lecture slides. Please read the comments for further explanation.)
+ *  implementations and would typically be included as a header.)
  *
- * @author
- *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
+ * @author Wade Fagen-Ulmschneider <waf@illinois.edu>
+ * @author Eric Huber
  */
 
 #pragma once
@@ -27,11 +25,7 @@
 
 // -------
 
-// Additional implementation notes from TA Eric:
-// Please check out the "binary-tree-traversals" and "bst" example
-// directories first for insight on how this works. The "bst" example
-// uses a very similar reference-storing design, and I've put additional
-// notes there about the design trade-offs inherent in that.
+// Please first see the introductory notes in the AVL.h file.
 
 // ------
 
@@ -51,7 +45,7 @@ template <typename K, typename D>
 bool AVL<K, D>::contains(const K& key) {
   // This is just like "find" but when the item is not found, we just return
   // false instead of throwing an exception. When found, return true.
-  
+
   TreeNode*& node = _find(key, head_);
 
   // Carefully note what the following return statement does:
@@ -98,16 +92,18 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_find(
   // cur will be nullptr if the tree is empty, or if we descend below the
   // lowest level without finding the key. Then we return nullptr and the
   // outer "find" function (which calls "_find") will report that as an
-  // error. Or, if we were calling insert, then the pointer returned is the
-  // position where the item should be placed.
-  //   Note: The "cur" we return in this case is equal to nullptr, but
+  // error.
+  //   (Note: The "cur" we return in this case is equal to nullptr, but
   // it's important to write "return cur;" and not "return nullptr;" since
-  // this function returns by reference. We specifically want to return the
-  // pointer at this position we found. This is true whether we want to
-  // replace it, as when we're doing an insertion, or if this is a failed
-  // "find" operation that should report an error. We should not return a
-  // reference to the "nullptr" literal, and we should avoid making
-  // references to temporary constants like numerical literals in any case.
+  // this function returns by reference. We want to return the exact pointer
+  // that we found at this position (returning it by reference), even if it
+  // is a nullptr that will be trigger a "not found" error in the caller
+  // function that we return to. We should not return a reference to the
+  // "nullptr" literal; trying to use references to temporary values or
+  // literal constants can cause new issues depending on which version of
+  // the language (and compiler) you're using. We can avoid those problems
+  // by being sure to return references to actual pointers that are owned
+  // by our tree.)
   if (cur == nullptr) { return cur; }
   // [Base case 2: When the key is found]
   // If we find a key that matches by value, then return the current TreeNode*
@@ -131,11 +127,11 @@ typename AVL<K, D>::TreeNode*& AVL<K, D>::_find(
 template <typename K, typename D>
 void AVL<K, D>::insert(const K& key, const D& data) {
 
-  // Begin the recursion process with this function that will find the place
+  // This function will begin a recursion process that will find the place
   // to insert the new node, insert it, and then rebalance the tree as needed
-  // while it returns.
+  // while returning up the recursive call stack to this point.
   _find_and_insert(key, data, head_);
-  
+
   // Run some optional brute-force debugging checks. This could be
   // deactivated for better efficiency. (The constant that toggles whether
   // this is run or not is defined and initialized in the class definition
@@ -198,13 +194,13 @@ const D& AVL<K, D>::remove(const K& key) {
   // node to remove, remove it, and then rebalance the tree as needed
   // while it returns.
   const D& d = _find_and_remove(key, head_);
-  
+
   // Run some optional brute-force debugging checks. This could be
   // deactivated for better efficiency. (The constant that toggles whether
   // this is run or not is defined and initialized in the class definition
   // itself, but this line of code could also just be commented out.)
   runDebuggingChecks();
-  
+
   return d;
 }
 
@@ -222,10 +218,7 @@ const D& AVL<K, D>::_find_and_remove(const K& key, TreeNode*& cur) {
   }
   else if (key == cur->key) {
     // Found the node to remove; remove it recursively and return the data.
-    // There's no need to "ensure balance" of the node being removed,
-    // but as soon as this call returns, notice that _ensureBalance gets
-    // called on the ancestors by the other conditional branches in this
-    // function.
+    // (There's no need to "ensure balance" of the node being removed.)
     return _remove(cur);
   }
   else if (key < cur->key) {
@@ -268,8 +261,6 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
 
   // Zero child remove:
   if (node->left == nullptr && node->right == nullptr) {
-    // std::cerr << "0-child remove" << std::endl;
-
     // Peek at the data referred to by the node so we can return a reference
     // to the data later, after the tree node itself is already gone.
     const D& data = node->data;
@@ -285,8 +276,6 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // One-child (left) remove
   else if (node->left != nullptr && node->right == nullptr) {
-    // std::cerr << "1-child left rem" << std::endl;
-
     // Similar to the previous case, except that we need to remap the "node"
     // pointer to point to the node's child, so that the parent of the node
     // being deleted will retain its connection to the rest of the tree
@@ -309,8 +298,6 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // One-child (right) remove
   else if (node->left == nullptr && node->right != nullptr) {
-    // std::cerr << "1-child right rem" << std::endl;
-
     // This case is symmetric to the previous case.
     const D& data = node->data;
     TreeNode* temp = node;
@@ -322,8 +309,6 @@ const D& AVL<K, D>::_remove(TreeNode*& node) {
   }
   // Two-child remove
   else {
-    // std::cerr << "2-child remove" << std::endl;
-
     // When the node being deleted has two children,
     // we have to be very careful.
 
@@ -491,9 +476,9 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     throw std::runtime_error(msg);
   }
 
-  // Check if the current node is not in balance,
-  // and if it is not, then detect the direction of the imbalance and
-  // perform a rotation to correct it.
+  // Check if the current node is not in balance. If it is not, then we check
+  // the balance in the direction of the imbalance, and use that information
+  // to choose the correct rotation to apply.
 
   if (initial_balance == -2) {
     const int l_balance = _get_balance_factor(cur->left);
@@ -528,8 +513,15 @@ void AVL<K, D>::_ensureBalance(TreeNode*& cur) {
     }
   }
 
-  // If nodes rotated underneath, their heights were updated.
-  // We need to update this node's height too.
+  // If nodes rotated anywhere underneath, their heights were updated.
+  // Then we need to update this node's height too.
+  // (Note that we do this regardless of whether the above conditional
+  // section did a rotation here or not. That's because another function
+  // may have called "_ensureBalance" as part of a recursive process,
+  // assuming that at the very least, this function would update the height
+  // of cur. That would be necessary if nodes were rotated further beneath
+  // this point in the tree. So to fulfill these assumptions, we make sure
+  // to update the height of cur here.)
   _updateHeight(cur);
 
   // Final error checking:
@@ -713,11 +705,11 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bo
     // a swap, and getting the data back. We have to pass "false" for the
     // next "isInitialCall" argument now.
     const D& d = _iopRemove(targetNode, iopAncestor->right, false);
-    
+
     // After the recursive call has been made, the target node has been
     // removed successfully from the ultimate IOP position.
     // Also, d now has a reference to the removed data.
-    
+
     // In many cases, the "iopAncestor" pointer is now still pointing to
     // one of the ancestors of the actual IOP node position. That is
     // convenient to us here, because on the way back up from the recursion
@@ -755,7 +747,7 @@ const D& AVL<K, D>::_iopRemove(TreeNode*& targetNode, TreeNode*& iopAncestor, bo
         _ensureBalance(iopAncestor);
       }
     }
-    
+
     return d;
   }
   else {

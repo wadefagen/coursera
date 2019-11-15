@@ -1,8 +1,8 @@
 /**
  * AVL example usage
  *
- * @author
- *   Wade Fagen-Ulmschneider <waf@illinois.edu>, Eric Huber
+ * @author Wade Fagen-Ulmschneider <waf@illinois.edu>
+ * @author Eric Huber
  */
 
 #include <string>
@@ -11,10 +11,9 @@
 
 #include "AVL.h"
 
-int main() {
+// Please see the introductory notes in AVL.h before you study this file.
 
-  // Please see the comments in the bst example project about why we are
-  // declaring these variables here in the main() function scope.
+int main() {
 
   // We'll allocate this many items contiguously in memory externally to the
   // AVL tree, which the tree will be able to reference in its nodes.
