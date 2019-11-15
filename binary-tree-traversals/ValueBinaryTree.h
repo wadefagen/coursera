@@ -35,7 +35,14 @@ class ValueBinaryTree {
         // of the actual data items inserted in the tree, NOT references.
         // (That is, note that we wrote "T data" here, not "T& data".)
         T data;
-        TreeNode *left, *right;
+        // Note that you can declare multiple pointers on the same line as
+        // shorthand, like this:
+        //   TreeNode *left, *right;
+        // But since this requires you to write the "*" with each variable
+        // name, it can be a little confusing, or prone to making a mistake.
+        // Instead, you can declare the pointers on separate lines like this:
+        TreeNode* left;
+        TreeNode* right;
         // This TreeNode constructor makes a copy of the data passed in when
         // it initializes its "data" member variable using the input called
         // "dataArgument". It copies the value since "data" is defined simply

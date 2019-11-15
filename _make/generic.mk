@@ -7,6 +7,7 @@
 #
 # @author Wade Fagen-Ulmschneider, <waf@illinois.edu>
 # @author Jeffrey Tolar
+# @author Eric Huber (edits made for CS Fundamentals MOOC)
 #
 
 
@@ -31,13 +32,14 @@ EXCLUSIVE_WARNING_OPTIONS = $(GCC_EXCLUSIVE_WARNING_OPTIONS)
 else
 EXCLUSIVE_WARNING_OPTIONS = $(CLANG_EXCLUSIVE_WARNING_OPTIONS)
 endif
+# ASANFLAGS = -fsanitize=address -fno-omit-frame-pointer # for debugging, if supported on the OS
 WARNINGS = -pedantic -Wall $(WARNINGS_AS_ERRORS) -Wfatal-errors -Wextra $(EXCLUSIVE_WARNING_OPTIONS)
 
 # Flags for compile:
-CXXFLAGS += -std=c++14 -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c
+CXXFLAGS += -std=c++14 -O0 $(WARNINGS) $(DEPFILE_FLAGS) -g -c $(ASANFLAGS)
 
 # Flags for linking:
-LDFLAGS += -std=c++14
+LDFLAGS += -std=c++14 $(ASANFLAGS)
 
 # Rule for `all` (first/default rule):
 all: $(EXE)
