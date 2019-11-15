@@ -310,8 +310,8 @@ class AVL {
 template <typename K, typename D>
 constexpr bool AVL<K, D>::ENABLE_DEBUGGING_CHECKS;
 
-// Note 1:
-// That this implementation of a tree is storing explicit aliases to memory
+// (Note 1) About how each TreeNode stores references:
+//   That this implementation of a tree is storing explicit aliases to memory
 // using references. This means that the actual allocation, cleanup, and
 // general responsibility for that data memory will lie outside of this class
 // implementation. However, the tree nodes themselves belong to the tree and
@@ -326,8 +326,8 @@ constexpr bool AVL<K, D>::ENABLE_DEBUGGING_CHECKS;
 // mode.
 //   Please see further comments in the file: AVL.hpp
 
-// Note 2:
-// This TreeNode constructor initializes its own "data" member using
+// (Note 2) About referring to variable names in an initialization list:
+//   This TreeNode constructor initializes its own "data" member using
 // the argument also called "data". This is one of VERY FEW places in
 // C++ where you can reuse the same variable name to mean different
 // things at the same time.

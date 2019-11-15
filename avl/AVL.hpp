@@ -137,10 +137,10 @@ void AVL<K, D>::insert(const K& key, const D& data) {
   _find_and_insert(key, data, head_);
   
   // Run some optional brute-force debugging checks. This could be
-  // deactivated for better efficiency. (The constant to toggle this is
-  // defined in the class definition itself, but it could also just be
-  // commented out.)
-  if (ENABLE_DEBUGGING_CHECKS) runDebuggingChecks();
+  // deactivated for better efficiency. (The constant that toggles whether
+  // this is run or not is defined and initialized in the class definition
+  // itself, but this line of code could also just be commented out.)
+  runDebuggingChecks();
 
 }
 
@@ -200,10 +200,10 @@ const D& AVL<K, D>::remove(const K& key) {
   const D& d = _find_and_remove(key, head_);
   
   // Run some optional brute-force debugging checks. This could be
-  // deactivated for better efficiency. (The constant to toggle this is
-  // defined in the class definition itself, but it could also just be
-  // commented out.)
-  if (ENABLE_DEBUGGING_CHECKS) runDebuggingChecks();
+  // deactivated for better efficiency. (The constant that toggles whether
+  // this is run or not is defined and initialized in the class definition
+  // itself, but this line of code could also just be commented out.)
+  runDebuggingChecks();
   
   return d;
 }

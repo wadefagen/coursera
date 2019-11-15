@@ -112,9 +112,11 @@ void AVL<K, D>::printVertical() const {
 
 template <typename K, typename D>
 bool AVL<K, D>::runDebuggingChecks() {
-  if (!_debugHeightCheck(head_)) throw std::runtime_error("ERROR: _debugHeightCheck failed");
-  if (!_debugBalanceCheck(head_)) throw std::runtime_error("ERROR: _debugBalanceCheck failed");
-  if (!_debugOrderCheck(head_)) throw std::runtime_error("ERROR: _debugOrderCheck failed");
+  if (ENABLE_DEBUGGING_CHECKS) {
+    if (!_debugHeightCheck(head_)) throw std::runtime_error("ERROR: _debugHeightCheck failed");
+    if (!_debugBalanceCheck(head_)) throw std::runtime_error("ERROR: _debugBalanceCheck failed");
+    if (!_debugOrderCheck(head_)) throw std::runtime_error("ERROR: _debugOrderCheck failed");
+  }
   return true;
 }
 
