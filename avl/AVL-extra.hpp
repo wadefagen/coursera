@@ -144,7 +144,7 @@ bool AVL<K, D>::_debugHeightCheck(TreeNode* cur) {
     std::cerr << "left: " << height_left << std::endl;
     std::cerr << "right: " << height_right << std::endl;
   }
-  
+
   return test_result;
 }
 
@@ -169,31 +169,65 @@ bool AVL<K, D>::_debugBalanceCheck(TreeNode* cur) {
 template <typename K, typename D>
 bool AVL<K, D>::_debugOrderCheck(TreeNode* cur) {
 
+  // An empty tree is well-ordered.
   if (!cur) return true;
 
-  // This assumes the current implementation does not allow two nodes
-  // to have the same key, so we enforce "<" ordering, not "<=" ordering.
+  // An enumeration is a special type that can only have one of the
+  // labeled states. Useful for a mode toggle variable.
+  enum action_enum {
+    VISIT, EXPLORE
+  };
+  
+  // There are more efficient ways to write this iterative traversal.
+  // Here we "explore", "visit", and finally order-check every node.
+  // You can do this at least 3x faster.
+  // Try it with one stack instead of using two stacks and a vector.
 
-  if (cur->left) {
-    if (cur->left->key >= cur->key) {
-      std::cerr << "ERROR, we found that:" << std::endl;
-      std::cerr << "cur->left->key >= cur->key" << std::endl;
-      std::cerr << "cur->left->key : " << cur->left->key << std::endl;
-      std::cerr << "cur->key : " << cur->key << std::endl;
-      return false;
+  std::stack<TreeNode*> node_stack;
+  std::stack<action_enum> action_stack;
+  std::vector<const K*> key_ptrs;
+
+  node_stack.push(head_);
+  action_stack.push(EXPLORE);
+
+  while (!node_stack.empty()) {
+    TreeNode* cur = node_stack.top();
+    node_stack.pop();
+
+    const auto action = action_stack.top();
+    action_stack.pop();
+
+    if (action == VISIT) {
+      key_ptrs.push_back(&(cur->key));
+    }
+    else {
+      if (cur->right) {
+        node_stack.push(cur->right);
+        action_stack.push(EXPLORE);
+      }
+
+      node_stack.push(cur);
+      action_stack.push(VISIT);
+
+      if (cur->left) {
+        node_stack.push(cur->left);
+        action_stack.push(EXPLORE);
+      }
     }
   }
 
-  if (cur->right) {
-    if (cur->right->key <= cur->key) {
-      std::cerr << "ERROR, we found that:" << std::endl;
-      std::cerr << "cur->right->key <= cur->key" << std::endl;
-      std::cerr << "cur->right->key : " << cur->right->key << std::endl;
-      std::cerr << "cur->key : " << cur->key << std::endl;
+  // There are more efficient ways to write this loop too.
+  for (int i=0; (i+1) < (int)(key_ptrs.size()); i++) {
+    const K* first_key_ptr = key_ptrs[i];
+    const K* second_key_ptr = key_ptrs[i+1];
+
+    // Keys should have increasing order, with no duplicates.
+    if (*first_key_ptr >= *second_key_ptr) {
+      std::cerr << "ERROR: These keys should be in strictly increasing order:" << std::endl;
+      std::cerr << *first_key_ptr << " followed by " << *second_key_ptr << std::endl;
       return false;
     }
   }
 
   return true;
 }
-
