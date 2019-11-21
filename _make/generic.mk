@@ -13,7 +13,7 @@
 
 # Compiler/linker config and object/depfile directory:
 CXX = g++
-LD = g++
+LD  = g++
 OBJS_DIR = .objs
 
 # -MMD and -MP asks clang++ to generate a .d file listing the headers used in the source code for use in the Make process.
