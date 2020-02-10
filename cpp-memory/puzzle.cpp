@@ -29,7 +29,7 @@ int main() {
 
 
 // Some other function that does something that uses some stack memory.
-// In thsi code, we calculate the total volume of cubes if length from 0..99.
+// In this code, we calculate the total volume of cubes of length from 0..99.
 double someOtherFunction() {
   Cube cubes[100];
   double totalVolume = 0;
