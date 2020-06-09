@@ -29,8 +29,9 @@ int main() {
   // the ">" operator to do alphabetical ordering. A plain string literal
   // is an array of const char, which wouldn't support that correctly.
   // (Instead, it would just compare the addresses of the arrays.)
-  cout << "my_max(\"World\", \"Hello\"): " << my_max(std::string("Hello"), std::string("World")) << endl;
-  
+  cout << "my_max(std::string(\"Hello\"), std::string(\"World\")): "
+       << my_max(std::string("Hello"), std::string("World")) << endl;
+
   // You need to finish implementing the ">" operator for Cube to get the
   // next line to work!
   // cout << "my_max( Cube(3), Cube(6) ): " << my_max( Cube(3), Cube(6) ) << endl;
