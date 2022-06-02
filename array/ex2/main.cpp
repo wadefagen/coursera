@@ -1,6 +1,6 @@
 /**
  * Calculating the memory seperation of elements in an array.
- * 
+ *
  * @author
  *   Wade Fagen-Ulmschneider <waf@illinois.edu>
  */
@@ -9,8 +9,8 @@
 
 int main() {
   // Create an array of 10 primes:
-  int values[10] = { 2, 3, 5, 7, 11, 13, 15, 17, 21, 23 };
-  
+  int values[10] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+
   // Print the size of each type `int`:
   std::cout << sizeof(int) << std::endl;
 
