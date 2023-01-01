@@ -1,5 +1,6 @@
 #include <iostream>
 
+// Create Pair class
 class Pair {
 public:
     int a;
