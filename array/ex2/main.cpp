@@ -16,7 +16,7 @@ int main() {
 
   // Using pointer arithmetic, ask the computer to calculate
   // the offset from the beginning of the array to [2]:
-  int offset = (long)&(values[2]) - (long)&(values[0]);
+  int offset = (long long)&(values[2]) - (long long)&(values[0]);
   std::cout << offset << std::endl;
 
   return 0;
