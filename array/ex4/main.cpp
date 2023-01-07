@@ -22,7 +22,7 @@ int main() {
 
   // Using pointer arithmetic, ask the computer to calculate
   // the offset from the beginning of the array to [2]:
-  int offset = (long)&(cubes[2]) - (long)&(cubes[0]);
+  int offset = (long long)&(cubes[2]) - (long long)&(cubes[0]);
   std::cout << "Memory separation: " << offset << std::endl;
 
   // Find a specific `target` cube in the array:
