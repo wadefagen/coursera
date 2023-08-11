@@ -1,0 +1,10 @@
+*DS_Store
+*.o
+*.d
+.objs/
+*submission*.zip
+*starter*zip
+#zephyr_output
+
+test
+main
